@@ -1,0 +1,12 @@
+{
+  "name": "queueless-staff-launcher",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Launcher scripts for running the root app from the Staff folder.",
+  "scripts": {
+    "start": "npx expo start .. --dev-client",
+    "android": "npx expo run:android ..",
+    "web": "npx expo start .. --web",
+    "ios": "expo run:ios"
+  }
+}
