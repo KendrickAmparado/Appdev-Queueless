@@ -23,14 +23,6 @@ npm run web
 npx expo start --web
 ```
 
-## Run Staff (from Staff folder)
-
-```bash
-cd C:\queueless-appdev\Staff
-npm run start
-
-```
-
 For Android native rebuild (when needed):
 
 ```bash

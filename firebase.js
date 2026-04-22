@@ -99,6 +99,7 @@ const CACHE_KEYS = {
   staffProfiles: 'ql:staffProfiles',
   staffQrCodes: (uid) => `ql:staffQrCodes:${uid}`,
   staffArchivedQrCodes: (uid) => `ql:staffArchivedQrCodes:${uid}`,
+  staffArchivedProfiles: 'ql:staffArchivedProfiles',
   allStaffQrCodes: 'ql:allStaffQrCodes',
   staffQueue: (uid) => `ql:staffQueue:${uid}`,
   allStaffQueues: 'ql:allStaffQueues',
@@ -149,6 +150,14 @@ function staffProfileRef(uid) {
 
 function staffQrCollectionRef(uid) {
   return ref(rtdb, `staffQRCodes/${uid}`);
+}
+
+function staffArchivedProfileCollectionRef() {
+  return ref(rtdb, 'staffArchivedProfiles');
+}
+
+function staffArchivedProfileRef(uid) {
+  return ref(rtdb, `staffArchivedProfiles/${uid}`);
 }
 
 function staffArchivedQrCollectionRef(uid) {
@@ -310,6 +319,12 @@ function authMessage(error) {
   if (code === 'auth/email-already-in-use') return 'This email is already registered.';
   if (code === 'auth/weak-password') return 'Password is too weak. Use at least 8 characters.';
   if (code === 'auth/network-request-failed') return 'Network error. Check your internet and try again.';
+  if (code === 'auth/too-many-requests') return 'Too many attempts. Please wait a few minutes then try again.';
+  if (code === 'auth/missing-continue-uri') return 'Password reset is not configured correctly (missing continue URL).';
+  if (code === 'auth/invalid-continue-uri') return 'Password reset URL is invalid. Please contact support.';
+  if (code === 'auth/unauthorized-continue-uri') {
+    return 'Password reset URL domain is not authorized in Firebase Authentication settings.';
+  }
   if (code === 'auth/operation-not-allowed') {
     return 'Email/password sign-in is disabled in Firebase Console.';
   }
@@ -373,9 +388,19 @@ export async function signInStaff(email, password) {
   }
 
   const profile = await getStaffProfile(credential.user.uid);
+  if (!profile) {
+    await signOut(auth);
+    throw new Error('Your account is not active. Contact the admin.');
+  }
+
   if (profile?.status === 'disabled') {
     await signOut(auth);
     throw new Error('Your account is disabled. Contact the admin.');
+  }
+
+  if (profile?.archived === true || profile?.status === 'archived') {
+    await signOut(auth);
+    throw new Error('Your account has been archived. Contact the admin.');
   }
 
   return credential;
@@ -383,6 +408,9 @@ export async function signInStaff(email, password) {
 
 export async function registerStaff({ name, contactNumber, officeDepartment, email, password }) {
   const normalizedEmail = normalizeEmail(email);
+  const normalizedName = String(name || '').trim();
+  const normalizedContactNumber = String(contactNumber || '').trim();
+  const normalizedOfficeDepartment = String(officeDepartment || '').trim();
 
   if (normalizedEmail === normalizeEmail(ADMIN_EMAIL)) {
     throw new Error('This email is reserved for admin.');
@@ -392,26 +420,48 @@ export async function registerStaff({ name, contactNumber, officeDepartment, ema
   try {
     credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
   } catch (error) {
-    throw new Error(authMessage(error));
+    if (error?.code !== 'auth/email-already-in-use') {
+      throw new Error(authMessage(error));
+    }
+
+    // The auth user may still exist even if admin removed profile data.
+    // In that case, sign in and recreate/reactivate the staff profile.
+    try {
+      credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+    } catch (signInError) {
+      throw new Error(
+        signInError?.code === 'auth/invalid-credential'
+          ? 'This email is already registered. Use your existing password to log in, or reset your password first.'
+          : authMessage(signInError),
+      );
+    }
   }
 
   await updateProfile(credential.user, {
-    displayName: name,
+    displayName: normalizedName,
   });
 
-  await set(staffProfileRef(credential.user.uid), {
+  const profileRef = staffProfileRef(credential.user.uid);
+  const existingSnapshot = await get(profileRef);
+  const existingProfile = existingSnapshot.val();
+
+  await set(profileRef, {
     uid: credential.user.uid,
-    name,
-    contactNumber,
-    officeDepartment,
+    name: normalizedName,
+    contactNumber: normalizedContactNumber,
+    officeDepartment: normalizedOfficeDepartment,
     email: normalizedEmail,
-    avatarUri: '',
+    avatarUri: existingProfile?.avatarUri || '',
     role: 'staff',
     approved: false,
+    archived: false,
     status: 'pending',
-    createdAt: Date.now(),
+    createdAt: existingProfile?.createdAt || Date.now(),
     approvedAt: null,
+    restoredAt: Date.now(),
   });
+
+  await remove(staffArchivedProfileRef(credential.user.uid));
 
   return credential;
 }
@@ -449,6 +499,8 @@ export async function upsertCurrentUserPushToken(pushToken) {
 export async function signInAdminDefault() {
   return signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASSWORD);
 }
+
+
 
 export function watchStaffProfile(uid, callback) {
   loadCache(CACHE_KEYS.staffProfile(uid), null).then((cached) => {
@@ -488,9 +540,24 @@ export function watchAllStaffProfiles(callback) {
   });
 }
 
+export function watchAllArchivedStaffProfiles(callback) {
+  loadCache(CACHE_KEYS.staffArchivedProfiles, []).then((cached) => {
+    if (cached?.length) callback(cached);
+  });
+
+  const archivedRef = staffArchivedProfileCollectionRef();
+  return onValue(archivedRef, (snapshot) => {
+    const raw = snapshot.val() || {};
+    const list = Object.values(raw);
+    callback(list);
+    saveCache(CACHE_KEYS.staffArchivedProfiles, list);
+  });
+}
+
 export async function approveStaff(uid) {
   await update(staffProfileRef(uid), {
     approved: true,
+    archived: false,
     status: 'approved',
     approvedAt: Date.now(),
   });
@@ -499,6 +566,7 @@ export async function approveStaff(uid) {
 export async function disableStaff(uid) {
   await update(staffProfileRef(uid), {
     approved: false,
+    archived: false,
     status: 'disabled',
   });
 }
@@ -506,6 +574,7 @@ export async function disableStaff(uid) {
 export async function enableStaff(uid) {
   await update(staffProfileRef(uid), {
     approved: true,
+    archived: false,
     status: 'approved',
     approvedAt: Date.now(),
   });
@@ -519,6 +588,75 @@ export async function deleteStaff(uid) {
   await remove(staffProfileRef(uid));
   await remove(staffQrCollectionRef(uid));
   await remove(staffQueueCollectionRef(uid));
+}
+
+export async function deleteStaffPermanently(uid) {
+  await remove(staffProfileRef(uid));
+  await remove(staffArchivedProfileRef(uid));
+  await remove(staffQrCollectionRef(uid));
+  await remove(staffArchivedQrCollectionRef(uid));
+  await remove(staffQueueCollectionRef(uid));
+}
+
+export async function archiveStaff(uid) {
+  const profileRef = staffProfileRef(uid);
+
+  try {
+    await update(profileRef, {
+      approved: false,
+      archived: true,
+      status: 'disabled',
+      archivedAt: Date.now(),
+    });
+    return;
+  } catch {
+    const snapshot = await get(profileRef);
+    const current = snapshot.val();
+
+    if (!current) {
+      throw new Error('Staff account not found.');
+    }
+
+    await set(staffArchivedProfileRef(uid), {
+      ...current,
+      approved: false,
+      status: 'disabled',
+      archivedAt: Date.now(),
+    });
+    await remove(profileRef);
+  }
+}
+
+export async function restoreStaff(uid) {
+  const profileRef = staffProfileRef(uid);
+
+  try {
+    await update(profileRef, {
+      approved: false,
+      archived: false,
+      status: 'pending',
+      restoredAt: Date.now(),
+    });
+    return;
+  } catch {
+    const archivedRef = staffArchivedProfileRef(uid);
+    const snapshot = await get(archivedRef);
+    const archived = snapshot.val();
+
+    if (!archived) {
+      throw new Error('Archived staff account not found.');
+    }
+
+    const { archivedAt, ...profile } = archived;
+    await set(profileRef, {
+      ...profile,
+      approved: false,
+      archived: false,
+      status: 'pending',
+      restoredAt: Date.now(),
+    });
+    await remove(archivedRef);
+  }
 }
 
 export async function generateStaffQrCode(uid, label) {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { getStaffProfile, signInStaff } from '../../../firebase';
+import { signInStaff } from '../../../firebase';
 import GlassCard from '../../../src/components/GlassCard';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 

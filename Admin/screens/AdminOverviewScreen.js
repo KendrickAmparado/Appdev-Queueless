@@ -20,7 +20,7 @@ export default function AdminOverviewScreen() {
   }, []);
 
   const pendingCount = useMemo(
-    () => profiles.filter((profile) => profile?.status !== 'approved').length,
+    () => profiles.filter((profile) => profile?.status !== 'approved' && profile?.archived !== true).length,
     [profiles],
   );
 

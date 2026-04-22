@@ -1,21 +1,33 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import GlassCard from '../../src/components/GlassCard';
 import ScreenContainer from '../../src/components/ScreenContainer';
 import ScreenTitle from '../../src/components/ScreenTitle';
 import {
+  archiveStaff,
   approveStaff,
-  deleteStaff,
+  deleteStaffPermanently,
   disableStaff,
   enableStaff,
+  restoreStaff,
   updateStaffProfile,
+  watchAllArchivedStaffProfiles,
   watchAllStaffProfiles,
 } from '../../firebase';
 import { colors, spacing, typography } from '../../src/theme';
 
+function hasVisiblePendingDetails(profile) {
+  const name = (profile?.name || '').trim();
+  const contact = (profile?.contactNumber || '').trim();
+  const office = (profile?.officeDepartment || '').trim();
+  const email = (profile?.email || '').trim();
+  return Boolean(name || contact || office || email);
+}
+
 export default function PendingAccountsScreen() {
-  const [profiles, setProfiles] = useState([]);
+  const [activeProfiles, setActiveProfiles] = useState([]);
+  const [archivedProfiles, setArchivedProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedView, setSelectedView] = useState('pending');
   const [approvingUid, setApprovingUid] = useState('');
@@ -27,31 +39,61 @@ export default function PendingAccountsScreen() {
   const [editEmailEditable, setEditEmailEditable] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = watchAllStaffProfiles((nextProfiles) => {
-      setProfiles(nextProfiles);
+    const unsubscribeActive = watchAllStaffProfiles((nextProfiles) => {
+      setActiveProfiles(nextProfiles);
       setLoading(false);
     });
 
-    return unsubscribe;
+    const unsubscribeArchived = watchAllArchivedStaffProfiles((nextProfiles) => {
+      setArchivedProfiles(nextProfiles);
+    });
+
+    return () => {
+      unsubscribeActive();
+      unsubscribeArchived();
+    };
   }, []);
 
   const pendingAccounts = useMemo(
-    () => profiles.filter((profile) => profile?.status !== 'approved'),
-    [profiles],
+    () =>
+      activeProfiles.filter(
+        (profile) => profile?.status !== 'approved' && profile?.archived !== true && hasVisiblePendingDetails(profile),
+      ),
+    [activeProfiles],
   );
 
   const approvedCount = useMemo(
-    () => profiles.filter((profile) => profile?.status === 'approved').length,
-    [profiles],
+    () => activeProfiles.filter((profile) => profile?.archived !== true && profile?.status === 'approved').length,
+    [activeProfiles],
   );
+
+  const archivedRecords = useMemo(() => {
+    const flaggedArchived = activeProfiles.filter((profile) => profile?.archived === true);
+    const merged = [...archivedProfiles, ...flaggedArchived];
+    const deduped = new Map();
+    merged.forEach((item) => {
+      if (item?.uid) deduped.set(item.uid, item);
+    });
+    return Array.from(deduped.values());
+  }, [activeProfiles, archivedProfiles]);
+
+  const archivedCount = useMemo(() => archivedRecords.length, [archivedRecords]);
 
   const filteredProfiles = useMemo(() => {
     if (selectedView === 'approved') {
-      return profiles.filter((profile) => profile?.status === 'approved' || profile?.status === 'disabled');
+      return activeProfiles.filter(
+        (profile) => profile?.archived !== true && (profile?.status === 'approved' || profile?.status === 'disabled'),
+      );
     }
 
-    return profiles.filter((profile) => profile?.status !== 'approved');
-  }, [profiles, selectedView]);
+    if (selectedView === 'archived') {
+      return archivedRecords;
+    }
+
+    return activeProfiles.filter(
+      (profile) => profile?.status !== 'approved' && profile?.archived !== true && hasVisiblePendingDetails(profile),
+    );
+  }, [activeProfiles, archivedRecords, selectedView]);
 
   const handleApprove = async (uid) => {
     try {
@@ -90,6 +132,102 @@ export default function PendingAccountsScreen() {
     setEditEmail('');
   };
 
+  const handleDelete = (item) => {
+    const uid = item?.uid;
+    if (!uid) return;
+
+    const accountName = item?.name || item?.email || 'this staff account';
+    const message = `Are you sure you want to archive ${accountName}? This account will be hidden from pending and approved lists.`;
+
+    const executeArchive = async () => {
+      try {
+        await archiveStaff(uid);
+      } catch (error) {
+        const reason = error?.message || 'Unable to archive this staff account right now.';
+        Alert.alert('Archive failed', reason);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = typeof globalThis.confirm === 'function' ? globalThis.confirm(message) : true;
+      if (confirmed) {
+        void executeArchive();
+      }
+      return;
+    }
+
+    Alert.alert('Archive staff account?', message, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Archive',
+        style: 'destructive',
+        onPress: () => {
+          void executeArchive();
+        },
+      },
+    ]);
+  };
+
+  const handleRestore = (item) => {
+    const uid = item?.uid;
+    if (!uid) return;
+
+    const accountName = item?.name || item?.email || 'this staff account';
+    const message = `Restore ${accountName} to pending accounts?`;
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      if (window.confirm(message)) {
+        void restoreStaff(uid);
+      }
+      return;
+    }
+
+    Alert.alert('Restore staff account?', message, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Restore',
+        onPress: () => {
+          void restoreStaff(uid);
+        },
+      },
+    ]);
+  };
+
+  const handlePermanentDelete = (item) => {
+    const uid = item?.uid;
+    if (!uid) return;
+
+    const accountName = item?.name || item?.email || 'this staff account';
+    const message = `Delete ${accountName} permanently? This action cannot be undone.`;
+
+    const executePermanentDelete = async () => {
+      try {
+        await deleteStaffPermanently(uid);
+      } catch (error) {
+        const reason = error?.message || 'Unable to permanently delete this staff account right now.';
+        Alert.alert('Delete failed', reason);
+      }
+    };
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      if (window.confirm(message)) {
+        void executePermanentDelete();
+      }
+      return;
+    }
+
+    Alert.alert('Delete permanently?', message, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          void executePermanentDelete();
+        },
+      },
+    ]);
+  };
+
   return (
     <ScreenContainer>
       <ScreenTitle
@@ -110,8 +248,8 @@ export default function PendingAccountsScreen() {
             pressed ? styles.pressedViewButton : null,
           ]}
         >
-          <Text style={styles.viewButtonLabel}>Total Pending</Text>
-          <Text style={styles.viewButtonValue}>{pendingAccounts.length}</Text>
+          <Text style={[styles.viewButtonLabel, styles.pendingViewButtonLabel]}>Total Pending</Text>
+          <Text style={[styles.viewButtonValue, styles.pendingViewButtonValue]}>{pendingAccounts.length}</Text>
         </Pressable>
         <Pressable
           onPress={() => setSelectedView('approved')}
@@ -123,13 +261,30 @@ export default function PendingAccountsScreen() {
             pressed ? styles.pressedViewButton : null,
           ]}
         >
-          <Text style={styles.viewButtonLabel}>Approved Staff</Text>
-          <Text style={styles.viewButtonValue}>{approvedCount}</Text>
+          <Text style={[styles.viewButtonLabel, styles.approvedViewButtonLabel]}>Approved Staff</Text>
+          <Text style={[styles.viewButtonValue, styles.approvedViewButtonValue]}>{approvedCount}</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setSelectedView('archived')}
+          style={({ hovered, pressed }) => [
+            styles.viewButton,
+            styles.archivedViewButton,
+            selectedView === 'archived' ? styles.activeViewButton : null,
+            hovered ? styles.hoverArchivedButton : null,
+            pressed ? styles.pressedViewButton : null,
+          ]}
+        >
+          <Text style={[styles.viewButtonLabel, styles.archivedViewButtonLabel]}>Archived Staff</Text>
+          <Text style={[styles.viewButtonValue, styles.archivedViewButtonValue]}>{archivedCount}</Text>
         </Pressable>
       </View>
 
       <Text style={[typography.section, styles.sectionTitle]}>
-        {selectedView === 'pending' ? 'QueueLess Pending Staff' : 'QueueLess Registered Staff'}
+        {selectedView === 'pending'
+          ? 'QueueLess Pending Staff'
+          : selectedView === 'approved'
+            ? 'QueueLess Registered Staff'
+            : 'QueueLess Archived Staff'}
       </Text>
 
       <GlassCard style={styles.headerCard}>
@@ -151,7 +306,9 @@ export default function PendingAccountsScreen() {
 
       {!loading && filteredProfiles.length === 0 ? (
         <GlassCard style={styles.emptyCard}>
-          <Text style={styles.emptyText}>No pending accounts right now.</Text>
+          <Text style={styles.emptyText}>
+            {selectedView === 'archived' ? 'No archived accounts right now.' : 'No pending accounts right now.'}
+          </Text>
         </GlassCard>
       ) : null}
 
@@ -162,8 +319,9 @@ export default function PendingAccountsScreen() {
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => {
           const isDisabled = item.status === 'disabled';
+          const isArchived = selectedView === 'archived' || item?.archived === true;
           const isEditing = editingUid === item.uid;
-          const isPending = item.status !== 'approved' && item.status !== 'disabled';
+          const isPending = item.status !== 'approved' && item.status !== 'disabled' && !isArchived;
 
           return (
             <GlassCard style={styles.itemCard}>
@@ -184,7 +342,7 @@ export default function PendingAccountsScreen() {
                       placeholderTextColor={colors.ink500}
                     />
                   ) : (
-                    <Text style={styles.itemText}>{item.name || '-'}</Text>
+                    <Text style={styles.itemText}>{item.name || ''}</Text>
                   )}
                 </View>
                 <View style={styles.colContact}>
@@ -197,7 +355,7 @@ export default function PendingAccountsScreen() {
                       placeholderTextColor={colors.ink500}
                     />
                   ) : (
-                    <Text style={styles.itemText}>{item.contactNumber || '-'}</Text>
+                    <Text style={styles.itemText}>{item.contactNumber || ''}</Text>
                   )}
                 </View>
                 <View style={styles.colOffice}>
@@ -210,7 +368,7 @@ export default function PendingAccountsScreen() {
                       placeholderTextColor={colors.ink500}
                     />
                   ) : (
-                    <Text style={styles.itemText}>{item.officeDepartment || '-'}</Text>
+                    <Text style={styles.itemText}>{item.officeDepartment || ''}</Text>
                   )}
                 </View>
                 <View style={styles.colEmail}>
@@ -225,7 +383,7 @@ export default function PendingAccountsScreen() {
                       editable={editEmailEditable}
                     />
                   ) : (
-                    <Text style={styles.itemText}>{item.email || '-'}</Text>
+                    <Text style={styles.itemText}>{item.email || ''}</Text>
                   )}
                 </View>
                 <View style={styles.colAction}>
@@ -240,7 +398,7 @@ export default function PendingAccountsScreen() {
                       </Pressable>
                     ) : null}
 
-                    {isEditing ? (
+                    {isArchived || isPending ? null : isEditing ? (
                       <Pressable style={styles.secondaryButton} onPress={() => handleSaveEdit(item.uid)}>
                         <Text style={styles.secondaryText}>Save</Text>
                       </Pressable>
@@ -250,16 +408,29 @@ export default function PendingAccountsScreen() {
                       </Pressable>
                     )}
 
-                    <Pressable
-                      style={isDisabled ? styles.enableButton : styles.disableButton}
-                      onPress={() => (isDisabled ? enableStaff(item.uid) : disableStaff(item.uid))}
-                    >
-                      <Text style={styles.approveText}>{isDisabled ? 'Enable' : 'Disable'}</Text>
-                    </Pressable>
+                    {isArchived ? (
+                      <>
+                        <Pressable style={styles.enableButton} onPress={() => handleRestore(item)}>
+                          <Text style={styles.approveText}>Restore</Text>
+                        </Pressable>
+                        <Pressable style={styles.permanentDeleteButton} onPress={() => handlePermanentDelete(item)}>
+                          <Text style={styles.approveText}>Delete Permanently</Text>
+                        </Pressable>
+                      </>
+                    ) : isPending ? null : (
+                      <Pressable
+                        style={isDisabled ? styles.enableButton : styles.disableButton}
+                        onPress={() => (isDisabled ? enableStaff(item.uid) : disableStaff(item.uid))}
+                      >
+                        <Text style={styles.approveText}>{isDisabled ? 'Enable' : 'Disable'}</Text>
+                      </Pressable>
+                    )}
 
-                    <Pressable style={styles.deleteButton} onPress={() => disableStaff(item.uid)}>
-                      <Text style={styles.approveText}>Disable</Text>
-                    </Pressable>
+                    {isArchived ? null : (
+                      <Pressable style={styles.deleteButton} onPress={() => handleDelete(item)}>
+                        <Text style={styles.approveText}>Archive</Text>
+                      </Pressable>
+                    )}
                   </View>
                 </View>
               </View>
@@ -289,12 +460,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pendingViewButton: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.border,
+    backgroundColor: '#FFF4D9',
+    borderColor: '#F2D48C',
   },
   approvedViewButton: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
+    backgroundColor: '#E2F8EA',
+    borderColor: '#9FD9B2',
+  },
+  archivedViewButton: {
+    backgroundColor: '#FCE7EB',
+    borderColor: '#F4AFBC',
   },
   activeViewButton: {
     shadowColor: colors.ink900,
@@ -305,12 +480,16 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -1 }],
   },
   hoverPendingButton: {
-    backgroundColor: '#DDF6F3',
-    borderColor: colors.primary,
+    backgroundColor: '#FFECC0',
+    borderColor: '#D0A94B',
   },
   hoverApprovedButton: {
-    backgroundColor: '#E0F8FA',
-    borderColor: colors.sky500,
+    backgroundColor: '#D3F2E0',
+    borderColor: '#63B87E',
+  },
+  hoverArchivedButton: {
+    backgroundColor: '#F8D7DE',
+    borderColor: '#CF657C',
   },
   pressedViewButton: {
     transform: [{ translateY: 0 }],
@@ -323,12 +502,30 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  pendingViewButtonLabel: {
+    color: '#7A5416',
+  },
+  approvedViewButtonLabel: {
+    color: '#1E6C3E',
+  },
+  archivedViewButtonLabel: {
+    color: '#8D2F42',
+  },
   viewButtonValue: {
     marginTop: 4,
     color: colors.primary,
     fontSize: 32,
     fontWeight: '900',
     lineHeight: 36,
+  },
+  pendingViewButtonValue: {
+    color: '#B0741D',
+  },
+  approvedViewButtonValue: {
+    color: '#1F8A4B',
+  },
+  archivedViewButtonValue: {
+    color: '#C2445F',
   },
   sectionTitle: {
     marginBottom: spacing.sm,
@@ -481,5 +678,14 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.15)',
+  },
+  permanentDeleteButton: {
+    backgroundColor: '#8B1111',
+    minHeight: 34,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.22)',
   },
 });

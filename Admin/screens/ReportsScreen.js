@@ -35,7 +35,7 @@ export default function ReportsScreen() {
   );
 
   const pending = useMemo(
-    () => profiles.filter((profile) => profile?.status !== 'approved').length,
+    () => profiles.filter((profile) => profile?.status !== 'approved' && profile?.archived !== true).length,
     [profiles],
   );
 
