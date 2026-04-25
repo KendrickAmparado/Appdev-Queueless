@@ -1,82 +1,76 @@
-import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import GlassCard from '../../../src/components/GlassCard';
-import { colors, radius, spacing, typography } from '../../../src/theme';
+import { colors, spacing } from '../../../src/theme';
 
 export default function StaffWelcomeScreen({ navigation }) {
   return (
-    <LinearGradient colors={['#DDFCF7', '#E6FFFB', '#FFF1F4']} style={styles.container}>
-      <View style={styles.content}>
-        <GlassCard style={styles.card}>
-          <Image source={require('../../../assets/keke.png')} style={styles.logo} />
-          <Text style={styles.badge}>Android Staff</Text>
-          <Text style={[typography.title, styles.title]}>Welcome, Staff</Text>
-          <Text style={[typography.subtitle, styles.subtitle]}>
-            Join QueueLess to generate QR codes, manage live queues, and update office settings.
-          </Text>
+    <View style={styles.container}>
+      <View style={styles.body}>
+        <Text style={styles.badge}>QueueLess Staff</Text>
+        <Text style={styles.title}>Welcome to QueueLess</Text>
+        <Text style={styles.subtitle}>
+          Scan, manage, and monitor daily service flow with one clean workspace.
+        </Text>
 
-          <View style={styles.actions}>
-            <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('StaffLogin')}>
-              <Text style={styles.primaryText}>Login</Text>
-            </Pressable>
-            <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('StaffRegister')}>
-              <Text style={styles.secondaryText}>Create Staff Account</Text>
-            </Pressable>
-          </View>
-        </GlassCard>
+        <View style={styles.actions}>
+          <Pressable onPress={() => navigation.navigate('StaffRegister')}>
+            <Text style={styles.secondaryText}>Create Account</Text>
+          </Pressable>
+
+          <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('StaffLogin')}>
+            <Text style={styles.primaryText}>Let's Start</Text>
+          </Pressable>
+        </View>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.secondary,
   },
-  content: {
+  body: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 460,
-    backgroundColor: colors.cardStrong,
-    padding: spacing.xl,
+    paddingHorizontal: spacing.xl,
   },
   badge: {
     alignSelf: 'flex-start',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderRadius: 999,
     marginBottom: spacing.md,
-    fontWeight: '800',
-    color: colors.primary,
-    backgroundColor: 'rgba(15, 118, 110, 0.16)',
+    fontWeight: '700',
+    color: colors.primaryDark,
+    backgroundColor: colors.primarySoft,
   },
   title: {
-    fontSize: 31,
-  },
-  logo: {
-    width: 160,
-    height: 160,
-    alignSelf: 'center',
-    marginBottom: spacing.md,
-    borderRadius: 16,
+    maxWidth: 420,
+    fontSize: 42,
+    lineHeight: 48,
+    color: colors.ink900,
+    fontWeight: '800',
+    letterSpacing: -0.7,
   },
   subtitle: {
     marginTop: spacing.sm,
     maxWidth: 360,
+    color: colors.ink600,
+    fontSize: 15,
+    lineHeight: 22,
   },
   actions: {
     marginTop: spacing.xl,
-    gap: spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   primaryButton: {
-    paddingVertical: 14,
-    borderRadius: radius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 999,
     alignItems: 'center',
     backgroundColor: colors.primary,
   },
@@ -84,16 +78,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  secondaryButton: {
-    paddingVertical: 14,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.primary,
-    backgroundColor: colors.cardStrong,
-  },
   secondaryText: {
-    color: colors.primary,
+    color: colors.ink900,
     fontWeight: '700',
+    textDecorationLine: 'underline',
   },
 });

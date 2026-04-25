@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 
 import GlassCard from '../../src/components/GlassCard';
 import ScreenContainer from '../../src/components/ScreenContainer';
@@ -92,7 +92,7 @@ export default function StudentWaitingScreen({ navigation, route }) {
     if (ticket.status === 'serving') {
       return {
         title: 'Your Turn',
-        subtitle: 'Please proceed to the counter now.',
+        subtitle: 'Please proceed now.',
         tone: styles.serving,
       };
     }
@@ -145,9 +145,6 @@ export default function StudentWaitingScreen({ navigation, route }) {
           </View>
         ) : null}
 
-        <Pressable style={styles.primaryButton} onPress={() => navigation.replace('StudentScan')}>
-          <Text style={styles.primaryText}>Back To Join</Text>
-        </Pressable>
       </GlassCard>
     </ScreenContainer>
   );
@@ -155,7 +152,7 @@ export default function StudentWaitingScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
   },
   name: {
     color: colors.ink900,
@@ -205,14 +202,14 @@ const styles = StyleSheet.create({
     height: 94,
     borderRadius: 47,
     borderWidth: 2,
-    borderColor: 'rgba(11, 122, 117, 0.2)',
+    borderColor: 'rgba(15, 118, 110, 0.2)',
   },
   spinnerRing: {
     width: 72,
     height: 72,
     borderRadius: 36,
     borderWidth: 3,
-    borderColor: 'rgba(11, 122, 117, 0.24)',
+    borderColor: 'rgba(15, 118, 110, 0.24)',
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 2,
@@ -228,9 +225,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(11, 122, 117, 0.15)',
+    backgroundColor: 'rgba(15, 118, 110, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(11, 122, 117, 0.24)',
+    borderColor: 'rgba(15, 118, 110, 0.2)',
   },
   waitingHint: {
     color: colors.ink700,
@@ -267,28 +264,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  primaryButton: {
-    marginTop: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 11,
-    backgroundColor: colors.primary,
-  },
-  primaryText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
   waiting: {
-    borderColor: 'rgba(11, 122, 117, 0.2)',
+    borderColor: colors.borderStrong,
   },
   serving: {
     borderColor: 'rgba(24, 169, 87, 0.3)',
     backgroundColor: '#F1FFF7',
   },
   done: {
-    borderColor: 'rgba(46, 199, 184, 0.3)',
-    backgroundColor: '#F1FFFC',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    backgroundColor: '#ECFDF5',
   },
   notFound: {
     borderColor: 'rgba(220, 47, 86, 0.28)',

@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   },
   status: {
     marginTop: 6,
-    color: colors.success,
+    color: colors.primary,
     fontWeight: '700',
   },
   linkText: {
@@ -225,9 +225,9 @@ const styles = StyleSheet.create({
   downloadButton: {
     marginTop: spacing.md,
     backgroundColor: colors.primary,
-    borderRadius: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   downloadText: {
     color: '#FFFFFF',
@@ -336,8 +336,8 @@ const styles = StyleSheet.create({
   iconOnlyButton: {
     width: 30,
     height: 30,
-    borderRadius: 6,
-    backgroundColor: colors.ink700,
+    borderRadius: 8,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-start',

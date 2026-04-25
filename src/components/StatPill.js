@@ -1,8 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 import { colors } from '../theme';
 
-export default function StatPill({ label, value, tone = 'default' }) {
+export default function StatPill({ label, value, tone = 'default', icon }) {
   const toneStyle =
     tone === 'success'
       ? styles.success
@@ -14,11 +15,21 @@ export default function StatPill({ label, value, tone = 'default' }) {
 
   return (
     <View style={[styles.pill, toneStyle]}>
-      <Text style={styles.value}>{value}</Text>
+      <View style={styles.valueRow}>
+        {icon ? <FontAwesome5 name={icon} size={14} color={stylesForTone[tone].iconColor} solid /> : null}
+        <Text style={styles.value}>{value}</Text>
+      </View>
       <Text style={styles.label}>{label}</Text>
     </View>
   );
 }
+
+const stylesForTone = {
+  default: { iconColor: colors.primary },
+  success: { iconColor: colors.success },
+  warning: { iconColor: colors.warning },
+  danger: { iconColor: colors.danger },
+};
 
 const styles = StyleSheet.create({
   pill: {
@@ -31,28 +42,34 @@ const styles = StyleSheet.create({
   },
   value: {
     color: colors.ink900,
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '800',
+  },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   label: {
     marginTop: 4,
     fontSize: 12,
-    color: colors.ink500,
+    color: colors.ink600,
+    fontWeight: '600',
   },
   default: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: '#FFFFFF',
     borderColor: colors.border,
   },
   success: {
-    backgroundColor: 'rgba(22, 163, 74, 0.1)',
-    borderColor: 'rgba(22, 163, 74, 0.25)',
+    backgroundColor: colors.successSoft,
+    borderColor: 'rgba(22, 163, 74, 0.18)',
   },
   warning: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderColor: 'rgba(245, 158, 11, 0.28)',
+    backgroundColor: colors.warningSoft,
+    borderColor: 'rgba(245, 158, 11, 0.18)',
   },
   danger: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderColor: 'rgba(239, 68, 68, 0.25)',
+    backgroundColor: colors.dangerSoft,
+    borderColor: 'rgba(225, 29, 72, 0.18)',
   },
 });

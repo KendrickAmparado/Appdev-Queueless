@@ -9,16 +9,11 @@ Single codebase with folder launchers:
 
 Run once from project root:
 
+
+## Run
+
 ```bash
 cd C:\queueless-appdev
-npm install
-npx expo install expo-print expo-sharing expo-file-system
-```
-
-## Run Admin (from Admin folder)
-
-```bash
-cd C:\queueless-appdev\Admin
 npm run web
 npx expo start --web
 ```

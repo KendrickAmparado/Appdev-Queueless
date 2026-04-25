@@ -35,13 +35,13 @@ const styles = StyleSheet.create({
   },
   card: {
     alignItems: 'center',
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.94)',
   },
   iconWrap: {
     width: 62,
     height: 62,
     borderRadius: 31,
-    backgroundColor: 'rgba(15, 118, 110, 0.14)',
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: spacing.sm,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.danger,
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 22,

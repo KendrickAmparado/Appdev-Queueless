@@ -12,7 +12,7 @@ import {
   updateCurrentStaffAvatar,
   watchStaffProfile,
 } from '../../firebase';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { colors, radius, spacing } from '../../src/theme';
 
 export default function ProfileScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -186,7 +186,7 @@ export default function ProfileScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     gap: spacing.sm,
   },
   avatarRow: {
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: colors.primarySoft,
   },
   infoRow: {
     borderWidth: 1,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FCFFFE',
   },
   label: {
     color: colors.ink700,
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: colors.ink700,
+    backgroundColor: colors.danger,
   },
   logoutText: {
     color: '#FFFFFF',

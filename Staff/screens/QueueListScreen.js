@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   qrHeaderCard: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     marginBottom: spacing.md,
   },
   qrHeaderLabel: {
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: colors.ink700,
+    backgroundColor: colors.primary,
   },
   qrChangeText: {
     color: '#FFFFFF',
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     alignItems: 'center',
   },
   summaryLabel: {
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   },
   summaryButton: {
     marginTop: spacing.xs,
-    backgroundColor: colors.ink700,
+    backgroundColor: colors.primary,
     borderRadius: 10,
     paddingVertical: 6,
     paddingHorizontal: 10,
@@ -362,26 +362,26 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   card: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
   },
   cardServingTop: {
-    backgroundColor: '#E6FAF7',
+    backgroundColor: '#ECFDF5',
     borderWidth: 1,
-    borderColor: '#7DD3C8',
+    borderColor: 'rgba(22, 163, 74, 0.18)',
   },
   servingBadge: {
     alignSelf: 'flex-start',
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.6,
-    color: '#0F766E',
-    backgroundColor: 'rgba(15, 118, 110, 0.12)',
+    color: '#166534',
+    backgroundColor: 'rgba(22, 163, 74, 0.12)',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 999,
   },
   cardMuted: {
-    backgroundColor: '#EEFDF8',
+    backgroundColor: '#F8FAFC',
   },
   row: {
     flexDirection: 'row',
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 560,
     maxHeight: '80%',
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.98)',
   },
   modalTitle: {
     color: colors.ink900,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   qrOptionActive: {
-    backgroundColor: 'rgba(14, 165, 233, 0.14)',
+    backgroundColor: colors.primarySoft,
   },
   modalName: {
     color: colors.ink700,

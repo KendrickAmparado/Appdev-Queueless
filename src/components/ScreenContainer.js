@@ -1,14 +1,13 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { gradient, spacing } from '../theme';
+import { colors, spacing } from '../theme';
 
 export default function ScreenContainer({ children, scroll = true }) {
   const Content = scroll ? ScrollView : View;
 
   return (
-    <LinearGradient colors={gradient} style={styles.gradient}>
+    <View style={styles.shell}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <Content
           style={styles.content}
@@ -18,13 +17,14 @@ export default function ScreenContainer({ children, scroll = true }) {
           {children}
         </Content>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
+  shell: {
     flex: 1,
+    backgroundColor: colors.secondary,
   },
   safeArea: {
     flex: 1,
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   scrollContent: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingBottom: 110,
   },
 });

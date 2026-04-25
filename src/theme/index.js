@@ -1,24 +1,34 @@
 export const colors = {
-  primary: '#0B7A75',
-  secondary: '#EAFBF9',
+  primary: '#0F766E',
+  primaryDark: '#134E4A',
+  primarySoft: '#DCEFEB',
+  secondary: '#F5F5F5',
+  secondaryStrong: '#EBEEEC',
   accent: '#F59E0B',
-  ink900: '#072B2A',
-  ink800: '#184745',
-  ink700: '#2A6663',
-  ink500: '#5B8B89',
-  sky500: '#1597A5',
+  accentSoft: '#FEF3C7',
+  ink900: '#0F172A',
+  ink800: '#1E293B',
+  ink700: '#334155',
+  ink600: '#475569',
+  ink500: '#64748B',
+  sky500: '#0EA5E9',
   mint500: '#14B8A6',
-  lime400: '#8BCF5B',
+  lime400: '#84CC16',
   orange400: '#F59E0B',
-  card: '#F2FFFD',
+  card: '#FFFFFF',
   cardStrong: '#FFFFFF',
-  border: 'rgba(11, 122, 117, 0.18)',
-  success: '#17A768',
-  warning: '#D97A1C',
-  danger: '#DC2F56',
+  border: 'rgba(15, 23, 42, 0.08)',
+  borderStrong: 'rgba(15, 118, 110, 0.22)',
+  success: '#16A34A',
+  successSoft: '#DCFCE7',
+  warning: '#D97706',
+  warningSoft: '#FEF3C7',
+  danger: '#E11D48',
+  dangerSoft: '#FFE4E6',
+  overlay: 'rgba(15, 23, 42, 0.06)',
 };
 
-export const gradient = ['#E6FBF9', '#ECFFFC', '#FFF8EB'];
+export const gradient = ['#F5F5F5', '#F5F5F5', '#EBEEEC'];
 
 export const spacing = {
   xs: 8,
@@ -32,14 +42,15 @@ export const radius = {
   sm: 12,
   md: 18,
   lg: 24,
+  xl: 32,
 };
 
 export const typography = {
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '800',
     color: colors.ink900,
-    letterSpacing: -0.4,
+    letterSpacing: -0.6,
   },
   subtitle: {
     fontSize: 15,

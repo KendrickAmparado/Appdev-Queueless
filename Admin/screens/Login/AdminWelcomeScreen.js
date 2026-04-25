@@ -1,21 +1,20 @@
 import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import GlassCard from '../../../src/components/GlassCard';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 
 export default function AdminWelcomeScreen({ navigation }) {
   return (
-    <LinearGradient colors={['#DDFCF7', '#E6FFFB', '#FFF1F4']} style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         <GlassCard style={styles.card}>
           <View style={styles.logoWrap}>
             <Image source={require('../../../assets/keke.png')} style={styles.centerLogo} resizeMode="cover" />
           </View>
           <Text style={styles.badge}>Web Admin</Text>
-          <Text style={[typography.title, styles.title]}>Welcome, QueueLess </Text>
+          <Text style={[typography.title, styles.title]}>Welcome to QueueLess Admin</Text>
           <Text style={[typography.subtitle, styles.subtitle]}>
-            Monitor pending accounts, staff QR activities, and reports from one secure dashboard.
+            Monitor approvals, staff QR activity, and reports from one cleaner dashboard.
           </Text>
 
           <Pressable
@@ -26,13 +25,14 @@ export default function AdminWelcomeScreen({ navigation }) {
           </Pressable>
         </GlassCard>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.secondary,
   },
   content: {
     flex: 1,
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 560,
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.9)',
     padding: spacing.xl,
   },
   badge: {
@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     marginBottom: spacing.md,
     fontWeight: '800',
-    color: colors.primary,
-    backgroundColor: 'rgba(15, 118, 110, 0.16)',
+    color: colors.primaryDark,
+    backgroundColor: colors.primarySoft,
   },
   title: {
-    fontSize: 40,
+    fontSize: 38,
   },
   subtitle: {
     marginTop: spacing.sm,
@@ -71,6 +71,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: radius.md,
     backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 14 },
+    shadowRadius: 24,
   },
   primaryText: {
     color: '#FFFFFF',
@@ -81,8 +85,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   centerLogo: {
-    width: 150,
-    height: 150,
-    borderRadius: 150,
+    width: 138,
+    height: 138,
+    borderRadius: 69,
   },
 });

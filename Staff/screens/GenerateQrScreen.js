@@ -131,7 +131,7 @@ export default function GenerateQrScreen() {
 const styles = StyleSheet.create({
   qrCard: {
     alignItems: 'center',
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     paddingVertical: spacing.xl,
   },
   input: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   qrWrap: {
     padding: spacing.sm,
-    borderRadius: 14,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
   },
   code: {
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 999,
-    backgroundColor: colors.ink700,
+    backgroundColor: colors.primary,
   },
   buttonText: {
     color: '#FFFFFF',
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   recentCard: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     alignItems: 'center',
   },
   recentQrWrap: {

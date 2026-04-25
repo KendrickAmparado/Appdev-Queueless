@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 import GlassCard from '../../src/components/GlassCard';
 import ScreenContainer from '../../src/components/ScreenContainer';
@@ -231,9 +232,9 @@ export default function PendingAccountsScreen() {
   return (
     <ScreenContainer>
       <ScreenTitle
-        badge="Pending"
-        title="Pending Staff Accounts"
-        subtitle="Review and approve pending staff accounts to allow them to generate QR codes and manage queues."
+        badge="Accounts"
+        title="Staff Accounts"
+        subtitle="Review, approve, edit, archive, and manage staff accounts from one place."
         centered
       />
 
@@ -248,8 +249,12 @@ export default function PendingAccountsScreen() {
             pressed ? styles.pressedViewButton : null,
           ]}
         >
-          <Text style={[styles.viewButtonLabel, styles.pendingViewButtonLabel]}>Total Pending</Text>
+          <View style={styles.viewButtonTopRow}>
+            <Text style={[styles.viewButtonLabel, styles.pendingViewButtonLabel]}>Total Pending</Text>
+            <FontAwesome5 name="arrow-right" size={14} color="#92400E" solid />
+          </View>
           <Text style={[styles.viewButtonValue, styles.pendingViewButtonValue]}>{pendingAccounts.length}</Text>
+          <Text style={styles.viewButtonHint}>Tap to view pending accounts</Text>
         </Pressable>
         <Pressable
           onPress={() => setSelectedView('approved')}
@@ -261,8 +266,12 @@ export default function PendingAccountsScreen() {
             pressed ? styles.pressedViewButton : null,
           ]}
         >
-          <Text style={[styles.viewButtonLabel, styles.approvedViewButtonLabel]}>Approved Staff</Text>
+          <View style={styles.viewButtonTopRow}>
+            <Text style={[styles.viewButtonLabel, styles.approvedViewButtonLabel]}>Approved Staff</Text>
+            <FontAwesome5 name="arrow-right" size={14} color="#166534" solid />
+          </View>
           <Text style={[styles.viewButtonValue, styles.approvedViewButtonValue]}>{approvedCount}</Text>
+          <Text style={styles.viewButtonHint}>Tap to view approved staff</Text>
         </Pressable>
         <Pressable
           onPress={() => setSelectedView('archived')}
@@ -274,14 +283,18 @@ export default function PendingAccountsScreen() {
             pressed ? styles.pressedViewButton : null,
           ]}
         >
-          <Text style={[styles.viewButtonLabel, styles.archivedViewButtonLabel]}>Archived Staff</Text>
+          <View style={styles.viewButtonTopRow}>
+            <Text style={[styles.viewButtonLabel, styles.archivedViewButtonLabel]}>Archived Staff</Text>
+            <FontAwesome5 name="arrow-right" size={14} color="#9F1239" solid />
+          </View>
           <Text style={[styles.viewButtonValue, styles.archivedViewButtonValue]}>{archivedCount}</Text>
+          <Text style={styles.viewButtonHint}>Tap to view archived staff</Text>
         </Pressable>
       </View>
 
       <Text style={[typography.section, styles.sectionTitle]}>
         {selectedView === 'pending'
-          ? 'QueueLess Pending Staff'
+          ? 'QueueLess Staff Accounts'
           : selectedView === 'approved'
             ? 'QueueLess Registered Staff'
             : 'QueueLess Archived Staff'}
@@ -453,47 +466,58 @@ const styles = StyleSheet.create({
   viewButton: {
     flex: 1,
     minHeight: 96,
-    borderRadius: 16,
-    paddingVertical: 14,
+    borderRadius: 20,
+    paddingVertical: 16,
     paddingHorizontal: 14,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 18,
+    elevation: 4,
   },
   pendingViewButton: {
-    backgroundColor: '#FFF4D9',
-    borderColor: '#F2D48C',
+    backgroundColor: colors.warningSoft,
+    borderColor: 'rgba(217, 119, 6, 0.2)',
   },
   approvedViewButton: {
-    backgroundColor: '#E2F8EA',
-    borderColor: '#9FD9B2',
+    backgroundColor: colors.successSoft,
+    borderColor: 'rgba(22, 163, 74, 0.18)',
   },
   archivedViewButton: {
-    backgroundColor: '#FCE7EB',
-    borderColor: '#F4AFBC',
+    backgroundColor: colors.dangerSoft,
+    borderColor: 'rgba(225, 29, 72, 0.18)',
   },
   activeViewButton: {
     shadowColor: colors.ink900,
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 16,
+    shadowOpacity: 0.14,
+    shadowOffset: { width: 0, height: 14 },
+    shadowRadius: 24,
     elevation: 6,
-    transform: [{ translateY: -1 }],
+    transform: [{ translateY: -2 }],
   },
   hoverPendingButton: {
-    backgroundColor: '#FFECC0',
-    borderColor: '#D0A94B',
+    backgroundColor: '#FEE7AE',
+    borderColor: '#D97706',
   },
   hoverApprovedButton: {
-    backgroundColor: '#D3F2E0',
-    borderColor: '#63B87E',
+    backgroundColor: '#CFF7D9',
+    borderColor: '#16A34A',
   },
   hoverArchivedButton: {
-    backgroundColor: '#F8D7DE',
-    borderColor: '#CF657C',
+    backgroundColor: '#FFD6DF',
+    borderColor: '#E11D48',
   },
   pressedViewButton: {
     transform: [{ translateY: 0 }],
-    opacity: 0.95,
+    opacity: 0.92,
+  },
+  viewButtonTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   viewButtonLabel: {
     color: colors.ink700,
@@ -503,13 +527,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   pendingViewButtonLabel: {
-    color: '#7A5416',
+    color: '#92400E',
   },
   approvedViewButtonLabel: {
-    color: '#1E6C3E',
+    color: '#166534',
   },
   archivedViewButtonLabel: {
-    color: '#8D2F42',
+    color: '#9F1239',
   },
   viewButtonValue: {
     marginTop: 4,
@@ -518,14 +542,20 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     lineHeight: 36,
   },
+  viewButtonHint: {
+    marginTop: 8,
+    color: colors.ink600,
+    fontSize: 11,
+    fontWeight: '600',
+  },
   pendingViewButtonValue: {
-    color: '#B0741D',
+    color: '#B45309',
   },
   approvedViewButtonValue: {
-    color: '#1F8A4B',
+    color: '#15803D',
   },
   archivedViewButtonValue: {
-    color: '#C2445F',
+    color: '#BE123C',
   },
   sectionTitle: {
     marginBottom: spacing.sm,
@@ -535,9 +565,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   headerCard: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     marginBottom: spacing.sm,
-    borderColor: 'rgba(11, 95, 255, 0.25)',
+    borderColor: colors.borderStrong,
   },
   headerRow: {
     flexDirection: 'row',
@@ -573,7 +603,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   emptyCard: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.92)',
     borderStyle: 'dashed',
   },
   emptyText: {
@@ -581,8 +611,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   itemCard: {
-    backgroundColor: colors.cardStrong,
-    borderColor: 'rgba(11, 95, 255, 0.13)',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderColor: colors.border,
   },
   itemRowColumns: {
     flexDirection: 'row',
@@ -593,7 +623,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#D9E6FF',
+    backgroundColor: colors.primarySoft,
   },
   input: {
     borderWidth: 1,
@@ -603,7 +633,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 12,
     color: colors.ink900,
-    backgroundColor: '#FAFCFF',
+    backgroundColor: '#FFFFFF',
   },
   inputDisabled: {
     backgroundColor: '#F3F4F6',
@@ -621,7 +651,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#0A3FC4',
+    borderColor: 'rgba(15, 118, 110, 0.35)',
     shadowColor: colors.primary,
     shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 8 },
@@ -639,7 +669,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   secondaryButton: {
-    backgroundColor: colors.ink700,
+    backgroundColor: colors.ink800,
     minHeight: 34,
     paddingVertical: 8,
     paddingHorizontal: 14,
@@ -680,7 +710,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.15)',
   },
   permanentDeleteButton: {
-    backgroundColor: '#8B1111',
+    backgroundColor: '#881337',
     minHeight: 34,
     paddingVertical: 8,
     paddingHorizontal: 14,

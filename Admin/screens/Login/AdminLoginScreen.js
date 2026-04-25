@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { ADMIN_EMAIL, signInAdmin } from '../../../firebase';
 import GlassCard from '../../../src/components/GlassCard';
@@ -32,7 +31,7 @@ export default function AdminLoginScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient colors={['#DDFCF7', '#E6FFFB', '#FFF1F4']} style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -49,7 +48,8 @@ export default function AdminLoginScreen({ navigation }) {
             <TextInput
               style={styles.input}
               value={email}
-              onChangeText={setEmail}
+              editable={false}
+              selectTextOnFocus={false}
               autoCapitalize="none"
               keyboardType="email-address"
               placeholder="Admin email"
@@ -72,13 +72,14 @@ export default function AdminLoginScreen({ navigation }) {
           </View>
         </GlassCard>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.secondary,
   },
   keyboardContainer: {
     flex: 1,
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 520,
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.92)',
     padding: spacing.xl,
   },
   avatar: {
@@ -102,8 +103,12 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
     marginBottom: spacing.sm,
-    color: colors.primary,
+    color: colors.primaryDark,
     fontWeight: '800',
+    backgroundColor: colors.primarySoft,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
   },
   title: {
     marginBottom: 4,
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   input: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.sm,
@@ -130,6 +135,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingVertical: 14,
     alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 20,
   },
   buttonText: {
     color: '#FFFFFF',
@@ -138,5 +147,9 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
     fontWeight: '600',
+    backgroundColor: colors.dangerSoft,
+    borderRadius: radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
 });

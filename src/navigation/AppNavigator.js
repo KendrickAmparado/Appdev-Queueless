@@ -2,7 +2,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import Constants from 'expo-constants';
@@ -28,7 +28,6 @@ import StudentScanScreen from '../../Student/screens/StudentScanScreen';
 import StudentWaitingScreen from '../../Student/screens/StudentWaitingScreen';
 
 const Stack = createNativeStackNavigator();
-const AdminTab = createBottomTabNavigator();
 const StaffTab = createBottomTabNavigator();
 
 const navTheme = {
@@ -36,6 +35,10 @@ const navTheme = {
   colors: {
     ...DefaultTheme.colors,
     background: colors.secondary,
+    card: colors.cardStrong,
+    primary: colors.primary,
+    text: colors.ink900,
+    border: colors.border,
   },
 };
 
@@ -99,67 +102,105 @@ const linking = {
   },
 };
 
-function AdminLogoutPlaceholderScreen() {
-  return null;
-}
+const adminSidebarItems = [
+  {
+    key: 'overview',
+    label: 'Overview',
+    icon: 'chart-pie',
+    component: AdminOverviewScreen,
+  },
+  {
+    key: 'pending',
+    label: 'Accounts',
+    icon: 'user-check',
+    component: PendingAccountsScreen,
+  },
+  {
+    key: 'staff-qr',
+    label: 'Staff QR',
+    icon: 'qrcode',
+    component: StaffQrCodesScreen,
+  },
+  {
+    key: 'reports',
+    label: 'Reports',
+    icon: 'chart-line',
+    component: ReportsScreen,
+  },
+];
 
 function AdminTabs() {
+  const [activeKey, setActiveKey] = useState(adminSidebarItems[0].key);
+  const activeItem = adminSidebarItems.find((item) => item.key === activeKey) || adminSidebarItems[0];
+  const ActiveScreen = activeItem.component;
+
+  const handleLogout = () => {
+    logoutCurrentUser().catch((error) => {
+      Alert.alert('Logout failed', error?.message || 'Unable to log out right now.');
+    });
+  };
+
   return (
-    <AdminTab.Navigator screenOptions={tabStyles}>
-      <AdminTab.Screen
-        name="Overview"
-        component={AdminOverviewScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="chart-pie" size={size} color={color} solid />
-          ),
-        }}
-      />
-      <AdminTab.Screen
-        name="Pending"
-        component={PendingAccountsScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="user-check" size={size} color={color} solid />
-          ),
-        }}
-      />
-      <AdminTab.Screen
-        name="Staff QR"
-        component={StaffQrCodesScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="qrcode" size={size} color={color} solid />
-          ),
-        }}
-      />
-      <AdminTab.Screen
-        name="Reports"
-        component={ReportsScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="chart-line" size={size} color={color} solid />
-          ),
-        }}
-      />
-      <AdminTab.Screen
-        name="Logout"
-        component={AdminLogoutPlaceholderScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="sign-out-alt" size={size} color={color} solid />
-          ),
-        }}
-        listeners={{
-          tabPress: (event) => {
-            event.preventDefault();
-            logoutCurrentUser().catch((error) => {
-              Alert.alert('Logout failed', error?.message || 'Unable to log out right now.');
-            });
-          },
-        }}
-      />
-    </AdminTab.Navigator>
+    <View style={adminSidebarStyles.layout}>
+      <View style={adminSidebarStyles.sidebar}>
+        <View style={adminSidebarStyles.headerBlock}>
+          <Image source={require('../../assets/account.png')} style={adminSidebarStyles.avatar} />
+          <View style={adminSidebarStyles.headerMeta}>
+            <Text style={adminSidebarStyles.brand}>QueueLess Admin</Text>
+            <Text style={adminSidebarStyles.caption}>Administrator</Text>
+          </View>
+        </View>
+
+        <View style={adminSidebarStyles.menuList}>
+          {adminSidebarItems.map((item) => {
+            const active = item.key === activeKey;
+            return (
+              <Pressable
+                key={item.key}
+                style={({ hovered, pressed }) => [
+                  adminSidebarStyles.menuButton,
+                  active && adminSidebarStyles.menuButtonActive,
+                  hovered && !active && adminSidebarStyles.menuButtonHover,
+                  pressed && adminSidebarStyles.menuButtonPressed,
+                ]}
+                onPress={() => setActiveKey(item.key)}
+              >
+                <FontAwesome5
+                  name={item.icon}
+                  size={14}
+                  color={active ? '#FFFFFF' : colors.ink500}
+                  solid
+                  style={adminSidebarStyles.menuIcon}
+                />
+                <Text style={[adminSidebarStyles.menuText, active && adminSidebarStyles.menuTextActive]}>{item.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Pressable
+          style={({ hovered, pressed }) => [
+            adminSidebarStyles.logoutButton,
+            hovered && adminSidebarStyles.logoutButtonHover,
+            pressed && adminSidebarStyles.menuButtonPressed,
+          ]}
+          onPress={handleLogout}
+        >
+          <FontAwesome5
+            name="sign-out-alt"
+            size={14}
+            color="#FFFFFF"
+            solid
+            style={adminSidebarStyles.menuIcon}
+          />
+          <Text style={adminSidebarStyles.logoutText}>Logout</Text>
+        </Pressable>
+      </View>
+
+      <View style={adminSidebarStyles.contentArea}>
+        <ActiveScreen />
+      </View>
+    </View>
   );
 }
 
@@ -269,16 +310,17 @@ export default function AppNavigator() {
   const isAdmin = user?.email === ADMIN_EMAIL;
   const isWeb = Platform.OS === 'web';
   const isAndroid = Platform.OS === 'android';
+  const webInitialRouteName = isAdmin ? 'AdminTabs' : 'AdminWelcome';
 
   return (
     <NavigationContainer theme={navTheme} linking={linking}>
       {isWeb ? (
-        <Stack.Navigator initialRouteName="AdminWelcome" screenOptions={{ headerShown: false }}>
+        <Stack.Navigator initialRouteName={webInitialRouteName} screenOptions={{ headerShown: false }}>
           <Stack.Screen name="StudentScan" component={StudentScanScreen} />
           <Stack.Screen name="StudentWaiting" component={StudentWaitingScreen} />
           <Stack.Screen name="AdminWelcome" component={AdminWelcomeScreen} />
           <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
-          {isAdmin ? <Stack.Screen name="AdminTabs" component={AdminTabs} /> : null}
+          <Stack.Screen name="AdminTabs" component={isAdmin ? AdminTabs : AdminLoginScreen} />
         </Stack.Navigator>
       ) : isAndroid ? (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -322,6 +364,119 @@ function UnsupportedPlatformScreen() {
   );
 }
 
+const adminSidebarStyles = StyleSheet.create({
+  layout: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: colors.secondary,
+  },
+  sidebar: {
+    width: 268,
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+    backgroundColor: colors.secondaryStrong,
+    paddingHorizontal: 18,
+    paddingVertical: 22,
+  },
+  headerBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primarySoft,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginBottom: 18,
+    gap: 10,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.card,
+  },
+  headerMeta: {
+    flex: 1,
+  },
+  brand: {
+    color: colors.ink900,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  caption: {
+    marginTop: 3,
+    color: colors.ink600,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  menuList: {
+    flexGrow: 1,
+    gap: 8,
+  },
+  menuButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  menuButtonHover: {
+    backgroundColor: '#F2FAF8',
+    borderColor: colors.borderStrong,
+  },
+  menuButtonPressed: {
+    opacity: 0.9,
+  },
+  menuButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: 'rgba(15, 118, 110, 0.4)',
+  },
+  menuIcon: {
+    width: 18,
+    textAlign: 'center',
+    marginRight: 10,
+  },
+  menuText: {
+    color: colors.ink700,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  menuTextActive: {
+    color: '#FFFFFF',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: colors.danger,
+    marginTop: 12,
+  },
+  logoutButtonHover: {
+    backgroundColor: '#BE123C',
+    borderColor: '#BE123C',
+  },
+  logoutText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  contentArea: {
+    flex: 1,
+    minWidth: 0,
+    backgroundColor: colors.secondary,
+  },
+});
+
 const tabStyles = {
   headerShown: false,
   tabBarActiveTintColor: colors.primary,
@@ -336,9 +491,9 @@ const tabStyles = {
           height: 68,
           borderTopWidth: 0,
           borderRadius: 18,
-          backgroundColor: colors.cardStrong,
+          backgroundColor: '#FFFFFF',
           shadowColor: '#0A1633',
-          shadowOpacity: 0.08,
+          shadowOpacity: 0.06,
           shadowOffset: { width: 0, height: 10 },
           shadowRadius: 20,
           elevation: 6,
@@ -354,9 +509,9 @@ const tabStyles = {
           borderTopRightRadius: 20,
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
-          backgroundColor: colors.cardStrong,
+          backgroundColor: '#FFFFFF',
           shadowColor: '#0A1633',
-          shadowOpacity: 0.11,
+          shadowOpacity: 0.08,
           shadowOffset: { width: 0, height: -4 },
           shadowRadius: 12,
           elevation: 8,

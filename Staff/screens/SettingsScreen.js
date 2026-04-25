@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   prefCard: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     marginBottom: spacing.md,
   },
   sectionTitle: {
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 560,
     maxHeight: '80%',
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.98)',
   },
   modalTitle: {
     color: colors.ink900,

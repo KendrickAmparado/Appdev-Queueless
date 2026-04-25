@@ -66,13 +66,13 @@ export default function AdminOverviewScreen() {
       />
 
       <View style={styles.grid}>
-        <StatPill label="Pending Accounts" value={pendingCount} />
-        <StatPill label="Approved Staff" value={approvedCount} />
+        <StatPill label="Pending Accounts" value={pendingCount} icon="user-clock" tone="warning" />
+        <StatPill label="Approved Staff" value={approvedCount} icon="user-check" tone="success" />
       </View>
 
       <View style={[styles.grid, styles.gridBottom]}>
-        <StatPill label="Total Staff" value={profiles.length} />
-        <StatPill label="Disabled" value={disabledCount} />
+        <StatPill label="Total Staff" value={profiles.length} icon="users" />
+        <StatPill label="Disabled" value={disabledCount} icon="user-slash" tone="danger" />
       </View>
 
       <GlassCard style={styles.healthCard}>
@@ -120,14 +120,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   healthCard: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     marginBottom: spacing.md,
-    borderColor: 'rgba(11, 95, 255, 0.24)',
+    borderColor: colors.borderStrong,
   },
   healthBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(46, 199, 184, 0.18)',
-    color: colors.ink700,
+    backgroundColor: colors.primarySoft,
+    color: colors.primaryDark,
     fontWeight: '700',
     fontSize: 11,
     paddingHorizontal: 10,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   officeCard: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     marginBottom: spacing.md,
   },
   officeRow: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(11, 95, 255, 0.1)',
+    borderBottomColor: colors.border,
   },
   officeRank: {
     width: 38,
@@ -173,8 +173,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   alertCard: {
-    backgroundColor: colors.cardStrong,
-    borderColor: 'rgba(255, 122, 26, 0.22)',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderColor: 'rgba(245, 158, 11, 0.2)',
   },
   alertTitle: {
     marginBottom: 8,

@@ -90,7 +90,7 @@ export default function StudentScanScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
   },
   meta: {
     color: colors.ink500,
@@ -115,6 +115,10 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontWeight: '600',
     marginBottom: spacing.sm,
+    backgroundColor: colors.dangerSoft,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   primaryButton: {
     alignItems: 'center',

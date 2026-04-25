@@ -9,13 +9,13 @@ export default function GlassCard({ children, style }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 16,
-    shadowColor: '#0E7490',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
+    padding: 18,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.06,
     shadowRadius: 18,
     elevation: 3,
   },

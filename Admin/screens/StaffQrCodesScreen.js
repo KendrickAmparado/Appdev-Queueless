@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   kpiCard: {
     flex: 1,
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
   },
   kpiLabel: {
     color: colors.ink500,
@@ -137,9 +137,9 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     minWidth: 170,
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     alignItems: 'center',
-    borderColor: 'rgba(11, 95, 255, 0.18)',
+    borderColor: colors.border,
   },
   qrWrap: {
     padding: 6,

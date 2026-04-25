@@ -25,12 +25,12 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
     marginBottom: 8,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 999,
-    backgroundColor: 'rgba(34, 211, 238, 0.16)',
-    color: colors.ink700,
-    fontWeight: '700',
+    backgroundColor: colors.accentSoft,
+    color: '#9A6700',
+    fontWeight: '800',
     fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 8,
-    maxWidth: 320,
+    maxWidth: 360,
   },
   subtitleCentered: {
     textAlign: 'center',

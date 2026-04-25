@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 import { registerStaff } from '../../../firebase';
 import GlassCard from '../../../src/components/GlassCard';
-import { colors, radius, spacing, typography } from '../../../src/theme';
+import { colors, spacing } from '../../../src/theme';
 
 export default function StaffRegisterScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -51,12 +51,12 @@ export default function StaffRegisterScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient colors={['#DDFCF7', '#E6FFFB', '#FFF1F4']} style={styles.container}>
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <GlassCard style={styles.card}>
           <Text style={styles.badge}>Staff Register</Text>
-          <Text style={[typography.title, styles.title]}>Create Staff Account</Text>
-          <Text style={[typography.subtitle, styles.subtitle]}>
+          <Text style={styles.title}>Create Staff Account</Text>
+          <Text style={styles.subtitle}>
             Register your staff profile to access queue controls and QR generation tools.
           </Text>
 
@@ -112,7 +112,14 @@ export default function StaffRegisterScreen({ navigation }) {
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
             <Pressable style={styles.button} onPress={handleRegister} disabled={loading}>
-              {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Register</Text>}
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>Register</Text>
+                  <FontAwesome5 name="arrow-right" size={12} color="#FFFFFF" solid />
+                </>
+              )}
             </Pressable>
 
             <Pressable onPress={() => navigation.navigate('StaffLogin')}>
@@ -121,13 +128,14 @@ export default function StaffRegisterScreen({ navigation }) {
           </View>
         </GlassCard>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.secondary,
   },
   content: {
     flexGrow: 1,
@@ -139,30 +147,44 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 500,
-    backgroundColor: colors.cardStrong,
+    backgroundColor: 'rgba(255,255,255,0.92)',
     padding: spacing.xl,
+    borderColor: colors.borderStrong,
+    borderWidth: 1,
+    borderRadius: 26,
   },
   badge: {
     alignSelf: 'flex-start',
-    marginBottom: spacing.sm,
-    color: colors.primary,
+    marginBottom: spacing.md,
+    color: colors.primaryDark,
     fontWeight: '800',
+    backgroundColor: colors.primarySoft,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
   },
   title: {
-    marginBottom: 4,
+    marginBottom: 6,
+    color: colors.ink900,
+    fontSize: 33,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   subtitle: {
     marginBottom: spacing.sm,
+    color: colors.ink600,
+    fontSize: 14,
+    lineHeight: 21,
   },
   form: {
     marginTop: spacing.md,
     gap: spacing.sm,
   },
   input: {
-    backgroundColor: colors.cardStrong,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
+    borderRadius: 14,
     paddingVertical: 13,
     paddingHorizontal: 14,
     color: colors.ink900,
@@ -170,9 +192,12 @@ const styles = StyleSheet.create({
   button: {
     marginTop: spacing.sm,
     backgroundColor: colors.primary,
-    borderRadius: radius.sm,
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
   buttonText: {
     color: '#FFFFFF',
@@ -180,12 +205,16 @@ const styles = StyleSheet.create({
   },
   helper: {
     marginTop: spacing.sm,
-    color: colors.ink700,
+    color: colors.primary,
     fontWeight: '600',
+    textAlign: 'center',
   },
   error: {
     color: colors.danger,
     fontWeight: '600',
+    backgroundColor: colors.dangerSoft,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  
 });
