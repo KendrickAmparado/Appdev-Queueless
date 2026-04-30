@@ -5,6 +5,7 @@
   "description": "Launcher scripts for running the root app from the Staff folder.",
   "scripts": {
     "start": "npx expo start .. --dev-client",
+    "start:tunnel": "npx expo start .. --dev-client --tunnel",
     "android": "npx expo run:android ..",
     "web": "npx expo start .. --web",
     "ios": "expo run:ios"

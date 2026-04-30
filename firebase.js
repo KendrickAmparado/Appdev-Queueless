@@ -4,10 +4,12 @@ import {
   getReactNativePersistence,
   getAuth,
   initializeAuth,
+  signInWithCustomToken,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
 } from 'firebase/auth';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { get, getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
@@ -77,6 +79,8 @@ const QUEUELESS_JOIN_BASE_URL = `${QUEUELESS_WEB_ORIGIN}/join`;
 const EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
 
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const FUNCTIONS_REGION = String(process.env.EXPO_PUBLIC_FIREBASE_FUNCTIONS_REGION || 'asia-southeast1').trim();
+const functions = getFunctions(app, FUNCTIONS_REGION);
 const authInstance = (() => {
   if (Platform.OS === 'web') {
     return getAuth(app);
@@ -332,6 +336,20 @@ function authMessage(error) {
   return error?.message || 'Authentication failed. Please try again.';
 }
 
+function functionErrorMessage(error) {
+  const code = String(error?.code || '').toLowerCase();
+
+  if (code.includes('not-found')) return 'No account was found for this email.';
+  if (code.includes('invalid-argument')) return 'Invalid details. Please check and try again.';
+  if (code.includes('resource-exhausted')) return 'Too many attempts. Please wait and try again.';
+  if (code.includes('deadline-exceeded')) return 'This code expired. Request a new one.';
+  if (code.includes('already-exists')) return 'This email is already registered.';
+  if (code.includes('failed-precondition')) return 'Password reset is not configured. Contact support.';
+  if (code.includes('permission-denied')) return error?.message || 'Permission denied.';
+
+  return error?.message || 'Request failed. Please try again.';
+}
+
 export async function signInAdmin(email, password) {
   const normalizedEmail = normalizeEmail(email);
 
@@ -374,17 +392,18 @@ export async function signInAdmin(email, password) {
 
 export async function signInStaff(email, password) {
   const normalizedEmail = normalizeEmail(email);
+  const callable = httpsCallable(functions, 'signInStaffAccount');
 
   let credential;
   try {
-    credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+    const result = await callable({ email: normalizedEmail, password: String(password || '') });
+    const customToken = String(result?.data?.customToken || '');
+    if (!customToken) {
+      throw new Error('Unable to sign in staff account.');
+    }
+    credential = await signInWithCustomToken(auth, customToken);
   } catch (error) {
-    throw new Error(authMessage(error));
-  }
-
-  if (normalizeEmail(credential.user.email) === normalizeEmail(ADMIN_EMAIL)) {
-    await signOut(auth);
-    throw new Error('Admin account is only allowed on the web admin portal.');
+    throw new Error(functionErrorMessage(error));
   }
 
   const profile = await getStaffProfile(credential.user.uid);
@@ -416,54 +435,24 @@ export async function registerStaff({ name, contactNumber, officeDepartment, ema
     throw new Error('This email is reserved for admin.');
   }
 
-  let credential;
+  const callable = httpsCallable(functions, 'registerStaffAccount');
+
   try {
-    credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
+    const result = await callable({
+      name: normalizedName,
+      contactNumber: normalizedContactNumber,
+      officeDepartment: normalizedOfficeDepartment,
+      email: normalizedEmail,
+      password: String(password || ''),
+    });
+    const customToken = String(result?.data?.customToken || '');
+    if (!customToken) {
+      throw new Error('Unable to register staff account.');
+    }
+    return await signInWithCustomToken(auth, customToken);
   } catch (error) {
-    if (error?.code !== 'auth/email-already-in-use') {
-      throw new Error(authMessage(error));
-    }
-
-    // The auth user may still exist even if admin removed profile data.
-    // In that case, sign in and recreate/reactivate the staff profile.
-    try {
-      credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
-    } catch (signInError) {
-      throw new Error(
-        signInError?.code === 'auth/invalid-credential'
-          ? 'This email is already registered. Use your existing password to log in, or reset your password first.'
-          : authMessage(signInError),
-      );
-    }
+    throw new Error(functionErrorMessage(error));
   }
-
-  await updateProfile(credential.user, {
-    displayName: normalizedName,
-  });
-
-  const profileRef = staffProfileRef(credential.user.uid);
-  const existingSnapshot = await get(profileRef);
-  const existingProfile = existingSnapshot.val();
-
-  await set(profileRef, {
-    uid: credential.user.uid,
-    name: normalizedName,
-    contactNumber: normalizedContactNumber,
-    officeDepartment: normalizedOfficeDepartment,
-    email: normalizedEmail,
-    avatarUri: existingProfile?.avatarUri || '',
-    role: 'staff',
-    approved: false,
-    archived: false,
-    status: 'pending',
-    createdAt: existingProfile?.createdAt || Date.now(),
-    approvedAt: null,
-    restoredAt: Date.now(),
-  });
-
-  await remove(staffArchivedProfileRef(credential.user.uid));
-
-  return credential;
 }
 
 export async function logoutCurrentUser() {
@@ -498,6 +487,47 @@ export async function upsertCurrentUserPushToken(pushToken) {
 
 export async function signInAdminDefault() {
   return signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASSWORD);
+}
+
+export async function requestStaffPasswordReset(email) {
+  const normalizedEmail = normalizeEmail(email);
+  const callable = httpsCallable(functions, 'requestStaffPasswordResetCode');
+
+  try {
+    await callable({ email: normalizedEmail });
+  } catch (error) {
+    throw new Error(functionErrorMessage(error));
+  }
+}
+
+export async function verifyStaffPasswordResetCode(email, code) {
+  const normalizedEmail = normalizeEmail(email);
+  const normalizedCode = String(code || '').trim();
+  const callable = httpsCallable(functions, 'verifyStaffPasswordResetCode');
+
+  try {
+    const result = await callable({ email: normalizedEmail, code: normalizedCode });
+    return String(result?.data?.resetToken || '');
+  } catch (error) {
+    throw new Error(functionErrorMessage(error));
+  }
+}
+
+export async function resetStaffPasswordWithToken(email, resetToken, newPassword) {
+  const normalizedEmail = normalizeEmail(email);
+  const normalizedToken = String(resetToken || '').trim();
+  const normalizedPassword = String(newPassword || '');
+  const callable = httpsCallable(functions, 'resetStaffPasswordWithToken');
+
+  try {
+    await callable({
+      email: normalizedEmail,
+      resetToken: normalizedToken,
+      newPassword: normalizedPassword,
+    });
+  } catch (error) {
+    throw new Error(functionErrorMessage(error));
+  }
 }
 
 

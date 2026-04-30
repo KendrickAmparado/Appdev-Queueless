@@ -23,8 +23,13 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "queueless.app",
-      "googleServicesFile": "./android/app/google-services.json"
-      ,"permissions": ["VIBRATE","READ_EXTERNAL_STORAGE","WRITE_EXTERNAL_STORAGE","POST_NOTIFICATIONS"]
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "VIBRATE",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -33,6 +38,12 @@
       "expo-web-browser",
       "expo-notifications",
       "expo-dev-client"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "79231c43-09c7-4a73-ba48-5409ba5979a5"
+      }
+    },
+    "owner": "kendrick17"
   }
 }

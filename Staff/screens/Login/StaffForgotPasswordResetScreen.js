@@ -1,31 +1,61 @@
-import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
-import { signInStaff } from '../../../firebase';
+import { resetStaffPasswordWithToken } from '../../../firebase';
 import GlassCard from '../../../src/components/GlassCard';
 import { colors, spacing } from '../../../src/theme';
 
-export default function StaffLoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
+export default function StaffForgotPasswordResetScreen({ navigation, route }) {
+  const email = String(route?.params?.email || '').trim();
+  const resetToken = String(route?.params?.resetToken || '').trim();
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  useEffect(() => {
+    if (!email || !resetToken) {
+      navigation.replace('StaffLogin');
+    }
+  }, [email, resetToken, navigation]);
+
+  const handleReset = async () => {
     setError('');
 
-    if (!email || !password) {
-      setError('Please enter both email and password.');
+    if (!password || !confirmPassword) {
+      setError('Please complete all fields.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Password and confirm password do not match.');
       return;
     }
 
     try {
       setLoading(true);
-      const credential = await signInStaff(email.trim(), password);
-      void credential;
+      await resetStaffPasswordWithToken(email, resetToken, password);
+      Alert.alert('Password updated', 'You can sign in with your new password.', [
+        { text: 'OK', onPress: () => navigation.navigate('StaffLogin') },
+      ]);
     } catch (authError) {
-      setError(authError.message || 'Unable to sign in staff account.');
+      setError(authError.message || 'Unable to reset password.');
     } finally {
       setLoading(false);
     }
@@ -38,50 +68,43 @@ export default function StaffLoginScreen({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <GlassCard style={styles.card}>
-          <Text style={styles.badge}>Staff Login</Text>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>
-            Sign in to generate QR tokens and manage your office queue in real-time.
-          </Text>
+          <Text style={styles.badge}>New Password</Text>
+          <Text style={styles.title}>Set a new password</Text>
+          <Text style={styles.subtitle}>Choose a strong password to secure your account.</Text>
 
           <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder="Email"
-              placeholderTextColor={colors.ink500}
-            />
             <TextInput
               style={styles.input}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              placeholder="Password"
+              placeholder="New password"
+              placeholderTextColor={colors.ink500}
+            />
+            <TextInput
+              style={styles.input}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              placeholder="Confirm password"
               placeholderTextColor={colors.ink500}
             />
 
-            <Pressable onPress={() => navigation.navigate('StaffForgotPasswordEmail')}>
-              <Text style={styles.link}>Forgot password?</Text>
-            </Pressable>
-
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            <Pressable style={styles.button} onPress={handleLogin} disabled={loading}>
+            <Pressable style={styles.button} onPress={handleReset} disabled={loading}>
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <>
-                  <Text style={styles.buttonText}>Sign In</Text>
-                  <FontAwesome5 name="arrow-right" size={12} color="#FFFFFF" solid />
+                  <Text style={styles.buttonText}>Update Password</Text>
+                  <FontAwesome5 name="lock" size={12} color="#FFFFFF" solid />
                 </>
               )}
             </Pressable>
 
-            <Pressable onPress={() => navigation.navigate('StaffRegister')}>
-              <Text style={styles.helper}>No account yet? Register here.</Text>
+            <Pressable onPress={() => navigation.navigate('StaffLogin')}>
+              <Text style={styles.helper}>Back to sign in</Text>
             </Pressable>
           </View>
         </GlassCard>
@@ -123,7 +146,7 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 6,
     color: colors.ink900,
-    fontSize: 33,
+    fontSize: 30,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
@@ -165,11 +188,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  link: {
-    alignSelf: 'flex-end',
-    color: colors.primary,
-    fontWeight: '600',
   },
   error: {
     color: colors.danger,

@@ -22,6 +22,9 @@ import { ADMIN_EMAIL, auth, logoutCurrentUser, watchStaffProfile } from '../../f
 import AdminLoginScreen from '../../Admin/screens/Login/AdminLoginScreen';
 import AdminWelcomeScreen from '../../Admin/screens/Login/AdminWelcomeScreen';
 import StaffLoginScreen from '../../Staff/screens/Login/StaffLoginScreen';
+import StaffForgotPasswordEmailScreen from '../../Staff/screens/Login/StaffForgotPasswordEmailScreen';
+import StaffForgotPasswordCodeScreen from '../../Staff/screens/Login/StaffForgotPasswordCodeScreen';
+import StaffForgotPasswordResetScreen from '../../Staff/screens/Login/StaffForgotPasswordResetScreen';
 import StaffRegisterScreen from '../../Staff/screens/Login/StaffRegisterScreen';
 import StaffWelcomeScreen from '../../Staff/screens/Login/StaffWelcomeScreen';
 import StudentScanScreen from '../../Student/screens/StudentScanScreen';
@@ -328,6 +331,9 @@ export default function AppNavigator() {
             <>
               <Stack.Screen name="StaffWelcome" component={StaffWelcomeScreen} />
               <Stack.Screen name="StaffLogin" component={StaffLoginScreen} />
+              <Stack.Screen name="StaffForgotPasswordEmail" component={StaffForgotPasswordEmailScreen} />
+              <Stack.Screen name="StaffForgotPasswordCode" component={StaffForgotPasswordCodeScreen} />
+              <Stack.Screen name="StaffForgotPasswordReset" component={StaffForgotPasswordResetScreen} />
               <Stack.Screen name="StaffRegister" component={StaffRegisterScreen} />
               <Stack.Screen name="StudentScan" component={StudentScanScreen} />
               <Stack.Screen name="StudentWaiting" component={StudentWaitingScreen} />

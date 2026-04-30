@@ -1,31 +1,63 @@
-import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
-import { signInStaff } from '../../../firebase';
+import { requestStaffPasswordReset, verifyStaffPasswordResetCode } from '../../../firebase';
 import GlassCard from '../../../src/components/GlassCard';
 import { colors, spacing } from '../../../src/theme';
 
-export default function StaffLoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function StaffForgotPasswordCodeScreen({ navigation, route }) {
+  const email = String(route?.params?.email || '').trim();
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  useEffect(() => {
+    if (!email) {
+      navigation.replace('StaffLogin');
+    }
+  }, [email, navigation]);
+
+  const handleVerify = async () => {
     setError('');
 
-    if (!email || !password) {
-      setError('Please enter both email and password.');
+    if (!code || code.length !== 6) {
+      setError('Please enter the 6-digit code.');
       return;
     }
 
     try {
       setLoading(true);
-      const credential = await signInStaff(email.trim(), password);
-      void credential;
+      const resetToken = await verifyStaffPasswordResetCode(email, code);
+      if (!resetToken) {
+        setError('Invalid code. Please try again.');
+        return;
+      }
+      navigation.navigate('StaffForgotPasswordReset', { email, resetToken });
     } catch (authError) {
-      setError(authError.message || 'Unable to sign in staff account.');
+      setError(authError.message || 'Unable to verify code.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError('');
+
+    try {
+      setLoading(true);
+      await requestStaffPasswordReset(email);
+    } catch (authError) {
+      setError(authError.message || 'Unable to resend code.');
     } finally {
       setLoading(false);
     }
@@ -38,50 +70,36 @@ export default function StaffLoginScreen({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <GlassCard style={styles.card}>
-          <Text style={styles.badge}>Staff Login</Text>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>
-            Sign in to generate QR tokens and manage your office queue in real-time.
-          </Text>
+          <Text style={styles.badge}>Verify Code</Text>
+          <Text style={styles.title}>Check your email</Text>
+          <Text style={styles.subtitle}>Enter the 6-digit code sent to {email || 'your email'}.</Text>
 
           <View style={styles.form}>
             <TextInput
               style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder="Email"
+              value={code}
+              onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 6))}
+              keyboardType="number-pad"
+              placeholder="6-digit code"
               placeholderTextColor={colors.ink500}
+              maxLength={6}
             />
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholder="Password"
-              placeholderTextColor={colors.ink500}
-            />
-
-            <Pressable onPress={() => navigation.navigate('StaffForgotPasswordEmail')}>
-              <Text style={styles.link}>Forgot password?</Text>
-            </Pressable>
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            <Pressable style={styles.button} onPress={handleLogin} disabled={loading}>
+            <Pressable style={styles.button} onPress={handleVerify} disabled={loading}>
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <>
-                  <Text style={styles.buttonText}>Sign In</Text>
-                  <FontAwesome5 name="arrow-right" size={12} color="#FFFFFF" solid />
+                  <Text style={styles.buttonText}>Verify Code</Text>
+                  <FontAwesome5 name="check" size={12} color="#FFFFFF" solid />
                 </>
               )}
             </Pressable>
 
-            <Pressable onPress={() => navigation.navigate('StaffRegister')}>
-              <Text style={styles.helper}>No account yet? Register here.</Text>
+            <Pressable onPress={handleResend} disabled={loading}>
+              <Text style={styles.helper}>Resend code</Text>
             </Pressable>
           </View>
         </GlassCard>
@@ -123,7 +141,7 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 6,
     color: colors.ink900,
-    fontSize: 33,
+    fontSize: 30,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
@@ -145,6 +163,8 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 14,
     color: colors.ink900,
+    textAlign: 'center',
+    letterSpacing: 8,
   },
   button: {
     marginTop: spacing.sm,
@@ -165,11 +185,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  link: {
-    alignSelf: 'flex-end',
-    color: colors.primary,
-    fontWeight: '600',
   },
   error: {
     color: colors.danger,

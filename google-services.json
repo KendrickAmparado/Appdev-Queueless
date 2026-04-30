@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "316587037345",
+    "firebase_url": "https://queueless-4f45c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "queueless-4f45c",
+    "storage_bucket": "queueless-4f45c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316587037345:android:3b225200fc8c8d987696e0",
+        "android_client_info": {
+          "package_name": "queueless.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiie-rhb4kIzDwRKgXy7nCRIc257RE4GE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
