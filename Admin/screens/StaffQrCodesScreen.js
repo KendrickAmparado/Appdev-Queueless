@@ -5,24 +5,34 @@ import QRCode from 'react-native-qrcode-svg';
 import GlassCard from '../../src/components/GlassCard';
 import ScreenContainer from '../../src/components/ScreenContainer';
 import ScreenTitle from '../../src/components/ScreenTitle';
-import { buildQueueJoinLink, watchAllStaffProfiles, watchAllStaffQrCodes } from '../../firebase';
+import { buildQueueJoinLink, watchAllArchivedStaffQrCodes, watchAllStaffProfiles, watchAllStaffQrCodes } from '../../firebase';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function StaffQrCodesScreen() {
   const [codes, setCodes] = useState([]);
+  const [archivedCodes, setArchivedCodes] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const { width } = useWindowDimensions();
 
   useEffect(() => {
+    console.log('[StaffQrCodesScreen] Setting up QR code watchers');
     const unsubscribeCodes = watchAllStaffQrCodes((list) => {
+      console.log('[StaffQrCodesScreen] Received QR codes:', list.length, 'codes');
+      console.log('[StaffQrCodesScreen] QR codes data:', list);
       setCodes(list);
     });
+    const unsubscribeArchived = watchAllArchivedStaffQrCodes((list) => {
+      console.log('[StaffQrCodesScreen] Received archived QR codes:', list.length, 'codes');
+      setArchivedCodes(list);
+    });
     const unsubscribeProfiles = watchAllStaffProfiles((list) => {
+      console.log('[StaffQrCodesScreen] Received profiles:', list.length, 'profiles');
       setProfiles(list);
     });
 
     return () => {
       unsubscribeCodes();
+      unsubscribeArchived();
       unsubscribeProfiles();
     };
   }, []);
@@ -34,15 +44,26 @@ export default function StaffQrCodesScreen() {
     }, {});
   }, [profiles]);
 
+  const allCodes = useMemo(() => {
+    const merged = [...codes, ...archivedCodes];
+    const deduped = new Map();
+    merged.forEach((item) => {
+      if (!item) return;
+      const key = `${item.uid || 'unknown'}:${item.id || item.value || ''}`;
+      if (!deduped.has(key)) deduped.set(key, item);
+    });
+    return Array.from(deduped.values());
+  }, [codes, archivedCodes]);
+
   const totalScans = useMemo(
-    () => codes.reduce((acc, item) => acc + Number(item?.scans || 0), 0),
-    [codes],
+    () => allCodes.reduce((acc, item) => acc + Number(item?.scans || 0), 0),
+    [allCodes],
   );
 
   const activeStaffWithQr = useMemo(() => {
-    const uidSet = new Set(codes.map((item) => item.uid));
+    const uidSet = new Set(allCodes.map((item) => item.uid));
     return uidSet.size;
-  }, [codes]);
+  }, [allCodes]);
 
   const numColumns = width >= 1500 ? 5 : width >= 1200 ? 4 : width >= 860 ? 3 : 2;
 
@@ -58,7 +79,7 @@ export default function StaffQrCodesScreen() {
       <View style={styles.kpiRow}>
         <GlassCard style={styles.kpiCard}>
           <Text style={styles.kpiLabel}>Total QR Codes</Text>
-          <Text style={styles.kpiValue}>{codes.length}</Text>
+          <Text style={styles.kpiValue}>{allCodes.length}</Text>
         </GlassCard>
         <GlassCard style={styles.kpiCard}>
           <Text style={styles.kpiLabel}>Active Staff w/ QR</Text>
@@ -73,7 +94,7 @@ export default function StaffQrCodesScreen() {
       <Text style={[typography.section, styles.sectionTitle]}>All Office QR Codes</Text>
 
       <FlatList
-        data={codes}
+        data={allCodes}
         numColumns={numColumns}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.grid}

@@ -1,0 +1,8 @@
+[reset-server] ENV loaded. PORT = 8083
+[reset-server] SMTP user set: true
+[reset-server] Firebase service account set: true
+[reset-server] Listening on 0.0.0.0:8083
+[qr/scan] Received request - uid: VwgYg2Pxo4VoIP1hXKHEkyu7rIy1 qrId: -OraNXJzf4Wy_epR7PV0
+[qr/scan] Looking up QR at path: staffQRCodes/VwgYg2Pxo4VoIP1hXKHEkyu7rIy1/-OraNXJzf4Wy_epR7PV0
+[qr/scan] Received request - uid: VwgYg2Pxo4VoIP1hXKHEkyu7rIy1 qrId: -OraNXJzf4Wy_epR7PV0
+[qr/scan] Looking up QR at path: staffQRCodes/VwgYg2Pxo4VoIP1hXKHEkyu7rIy1/-OraNXJzf4Wy_epR7PV0

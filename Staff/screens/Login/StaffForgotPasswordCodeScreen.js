@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -55,7 +56,8 @@ export default function StaffForgotPasswordCodeScreen({ navigation, route }) {
 
     try {
       setLoading(true);
-      await requestStaffPasswordReset(email);
+      const result = await requestStaffPasswordReset(email);
+      Alert.alert('Email sent', result?.message || 'Reset code sent to your email.');
     } catch (authError) {
       setError(authError.message || 'Unable to resend code.');
     } finally {

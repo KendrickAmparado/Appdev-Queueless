@@ -7,6 +7,16 @@ import { logoutCurrentUser } from '../../firebase';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function AwaitingApprovalScreen() {
+  const handleLogout = async () => {
+    console.log('[AwaitingApprovalScreen] Logout button pressed');
+    try {
+      await logoutCurrentUser();
+      console.log('[AwaitingApprovalScreen] Logout successful');
+    } catch (error) {
+      console.error('[AwaitingApprovalScreen] Logout error:', error);
+    }
+  };
+
   return (
     <ScreenContainer>
       <View style={styles.content}>
@@ -19,7 +29,7 @@ export default function AwaitingApprovalScreen() {
             Your staff account is registered. Please wait for admin approval before using the QueueLess staff tools.
           </Text>
 
-          <Pressable style={styles.button} onPress={logoutCurrentUser}>
+          <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Log Out</Text>
           </Pressable>
         </GlassCard>

@@ -5,7 +5,10 @@ import GlassCard from '../../src/components/GlassCard';
 import ScreenContainer from '../../src/components/ScreenContainer';
 import ScreenTitle from '../../src/components/ScreenTitle';
 import { buildQueueJoinLink, joinStudentQueueByQrValue } from '../../firebase';
-import { registerForPushNotificationsAsync } from '../../src/notifications/registerForPushNotifications';
+import {
+  registerForPushNotificationsAsync,
+  sendLocalQueueJoinedNotification,
+} from '../../src/notifications/registerForPushNotifications';
 import { colors, spacing } from '../../src/theme';
 
 export default function StudentScanScreen({ navigation, route }) {
@@ -44,6 +47,7 @@ export default function StudentScanScreen({ navigation, route }) {
       const joined = await joinStudentQueueByQrValue(qrValue, name.trim(), {
         pushToken,
       });
+      await sendLocalQueueJoinedNotification(joined.qrLabel);
       navigation.replace('StudentWaiting', {
         uid: joined.uid,
         queueId: joined.queueId,

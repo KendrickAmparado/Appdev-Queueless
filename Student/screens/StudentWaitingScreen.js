@@ -137,11 +137,13 @@ export default function StudentWaitingScreen({ navigation, route }) {
           </View>
         ) : null}
 
-        {ticket.status === 'waiting' && ticket.position ? (
+        {ticket.status === 'waiting' ? (
           <View style={styles.positionBox}>
             <Text style={styles.positionLabel}>Your Position</Text>
-            <Text style={styles.positionValue}>#{ticket.position}</Text>
-            <Text style={styles.queueCount}>Total Waiting: {ticket.waitingCount}</Text>
+            <Text style={styles.positionValue}>
+              {ticket.position ? `#${ticket.position}` : 'Calculating...'}
+            </Text>
+            <Text style={styles.queueCount}>Total Waiting: {ticket.waitingCount || 0}</Text>
           </View>
         ) : null}
 

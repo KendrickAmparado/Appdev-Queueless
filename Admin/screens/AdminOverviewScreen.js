@@ -59,58 +59,67 @@ export default function AdminOverviewScreen() {
   return (
     <ScreenContainer>
       <ScreenTitle
-        badge="QueueLess"
+        badge="Admin"
         title="Admin Overview"
         subtitle="Track staffing readiness, pending approvals, and office distribution from one dashboard."
         centered
       />
 
-      <View style={styles.grid}>
-        <StatPill label="Pending Accounts" value={pendingCount} icon="user-clock" tone="warning" />
-        <StatPill label="Approved Staff" value={approvedCount} icon="user-check" tone="success" />
+      <View style={styles.contentContainer}>
+        <View style={styles.grid}>
+          <StatPill label="Pending Accounts" value={pendingCount} icon="user-clock" tone="warning" />
+          <StatPill label="Approved Staff" value={approvedCount} icon="user-check" tone="success" />
+        </View>
+
+        <View style={[styles.grid, styles.gridBottom]}>
+          <StatPill label="Total Staff" value={profiles.length} icon="users" />
+          <StatPill label="Disabled" value={disabledCount} icon="user-slash" tone="danger" />
+        </View>
+
+        <GlassCard style={styles.healthCard}>
+          <Text style={styles.healthBadge}>{healthLabel}</Text>
+          <Text style={styles.healthTitle}>Approval Performance</Text>
+          <Text style={styles.healthText}>
+            {profiles.length === 0
+              ? 'No staff records yet. Invite staff accounts to begin onboarding.'
+              : `${Math.round((approvedCount / profiles.length) * 100)}% of staff are approved and ready to serve students.`}
+          </Text>
+        </GlassCard>
+
+        <GlassCard style={styles.officeCard}>
+          <Text style={[typography.section, styles.alertTitle]}>Top Offices By Staff Count</Text>
+          {topOffices.length === 0 ? (
+            <Text style={styles.alertText}>No office records available yet.</Text>
+          ) : (
+            topOffices.map((item, index) => (
+              <View key={item.office} style={styles.officeRow}>
+                <Text style={styles.officeRank}>#{index + 1}</Text>
+                <Text style={styles.officeName}>{item.office}</Text>
+                <Text style={styles.officeCount}>{item.total}</Text>
+              </View>
+            ))
+          )}
+        </GlassCard>
+
+        <GlassCard style={styles.alertCard}>
+          <Text style={[typography.section, styles.alertTitle]}>Office Status</Text>
+          <Text style={styles.alertText}>
+            Recommended action: prioritize approving pending users assigned to busy offices so queue handling stays balanced.
+          </Text>
+        </GlassCard>
       </View>
 
-      <View style={[styles.grid, styles.gridBottom]}>
-        <StatPill label="Total Staff" value={profiles.length} icon="users" />
-        <StatPill label="Disabled" value={disabledCount} icon="user-slash" tone="danger" />
-      </View>
-
-      <GlassCard style={styles.healthCard}>
-        <Text style={styles.healthBadge}>{healthLabel}</Text>
-        <Text style={styles.healthTitle}>Approval Performance</Text>
-        <Text style={styles.healthText}>
-          {profiles.length === 0
-            ? 'No staff records yet. Invite staff accounts to begin onboarding.'
-            : `${Math.round((approvedCount / profiles.length) * 100)}% of staff are approved and ready to serve students.`}
-        </Text>
-      </GlassCard>
-
-      <GlassCard style={styles.officeCard}>
-        <Text style={[typography.section, styles.alertTitle]}>Top Offices By Staff Count</Text>
-        {topOffices.length === 0 ? (
-          <Text style={styles.alertText}>No office records available yet.</Text>
-        ) : (
-          topOffices.map((item, index) => (
-            <View key={item.office} style={styles.officeRow}>
-              <Text style={styles.officeRank}>#{index + 1}</Text>
-              <Text style={styles.officeName}>{item.office}</Text>
-              <Text style={styles.officeCount}>{item.total}</Text>
-            </View>
-          ))
-        )}
-      </GlassCard>
-
-      <GlassCard style={styles.alertCard}>
-        <Text style={[typography.section, styles.alertTitle]}>Office Status</Text>
-        <Text style={styles.alertText}>
-          Recommended action: prioritize approving pending users assigned to busy offices so queue handling stays balanced.
-        </Text>
-      </GlassCard>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  contentContainer: {
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 16,
+    padding: spacing.md,
+    marginTop: spacing.sm,
+  },
   grid: {
     flexDirection: 'row',
     gap: 10,

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "queueless-appdev",
+    "name": "Queueless",
     "slug": "queueless-appdev",
     "scheme": "queueless",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/keke.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {

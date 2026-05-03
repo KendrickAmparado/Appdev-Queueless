@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { colors, spacing } from '../theme';
 
-export default function ScreenContainer({ children, scroll = true }) {
+export default function ScreenContainer({ children, scroll = true, stickyHeader = true }) {
   const Content = scroll ? ScrollView : View;
 
   return (
@@ -13,6 +13,7 @@ export default function ScreenContainer({ children, scroll = true }) {
           style={styles.content}
           contentContainerStyle={scroll ? styles.scrollContent : undefined}
           showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={scroll && stickyHeader ? [0] : undefined}
         >
           {children}
         </Content>

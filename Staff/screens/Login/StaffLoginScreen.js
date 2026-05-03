@@ -63,7 +63,7 @@ export default function StaffLoginScreen({ navigation }) {
               placeholderTextColor={colors.ink500}
             />
 
-            <Pressable onPress={() => navigation.navigate('StaffForgotPasswordEmail')}>
+            <Pressable onPress={() => navigation.navigate('StaffForgotPasswordEmail', { email })}>
               <Text style={styles.link}>Forgot password?</Text>
             </Pressable>
 

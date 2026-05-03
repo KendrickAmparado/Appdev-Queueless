@@ -27,6 +27,22 @@ export async function registerForPushNotificationsAsync() {
       return '';
     }
 
+    if (Platform.OS === 'android') {
+      try {
+        const deviceToken = await Notifications.getDevicePushTokenAsync();
+        const nativeToken = String(deviceToken?.data || '').trim();
+
+        if (nativeToken) {
+          return {
+            provider: String(deviceToken?.type || 'fcm').toLowerCase(),
+            token: nativeToken,
+          };
+        }
+      } catch {
+        // Fall back to Expo push tokens if a native token is unavailable.
+      }
+    }
+
     const projectId =
       Constants?.expoConfig?.extra?.eas?.projectId ||
       Constants?.easConfig?.projectId ||
@@ -35,9 +51,35 @@ export async function registerForPushNotificationsAsync() {
     const tokenResponse = projectId
       ? await Notifications.getExpoPushTokenAsync({ projectId })
       : await Notifications.getExpoPushTokenAsync();
+    const expoToken = String(tokenResponse?.data || '').trim();
+    if (!expoToken) return '';
 
-    return String(tokenResponse?.data || '');
+    return {
+      provider: 'expo',
+      token: expoToken,
+    };
   } catch {
     return '';
+  }
+}
+
+export async function sendLocalQueueJoinedNotification(queueLabel = 'Office Queue') {
+  if (Platform.OS === 'web') return;
+
+  try {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'QueueLess: Joined queue',
+        body: `You joined ${queueLabel}. We will notify you when it is your turn.`,
+        sound: 'default',
+        data: {
+          type: 'queue_joined',
+          queueLabel: String(queueLabel || 'Office Queue'),
+        },
+      },
+      trigger: null,
+    });
+  } catch {
+    // Ignore local notification failures to avoid blocking queue join.
   }
 }

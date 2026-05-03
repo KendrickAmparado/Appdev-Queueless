@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import GlassCard from '../../src/components/GlassCard';
@@ -48,6 +48,7 @@ export default function SettingsScreen() {
     await restoreArchivedStaffQrCode(uid, id);
   };
 
+
   return (
     <ScreenContainer>
       <ScreenTitle
@@ -92,6 +93,7 @@ export default function SettingsScreen() {
           <Text style={styles.archiveText}>Open Archive ({archivedItems.length})</Text>
         </Pressable>
       </GlassCard>
+
 
       <Modal
         transparent

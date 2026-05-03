@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,8 +16,9 @@ import { requestStaffPasswordReset } from '../../../firebase';
 import GlassCard from '../../../src/components/GlassCard';
 import { colors, spacing } from '../../../src/theme';
 
-export default function StaffForgotPasswordEmailScreen({ navigation }) {
-  const [email, setEmail] = useState('');
+export default function StaffForgotPasswordEmailScreen({ navigation, route }) {
+  const initialEmail = String(route?.params?.email || '').trim();
+  const [email, setEmail] = useState(initialEmail);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -30,8 +32,10 @@ export default function StaffForgotPasswordEmailScreen({ navigation }) {
 
     try {
       setLoading(true);
-      await requestStaffPasswordReset(email.trim());
-      navigation.navigate('StaffForgotPasswordCode', { email: email.trim() });
+      const result = await requestStaffPasswordReset(email.trim());
+      Alert.alert('Email sent', result?.message || 'Reset code sent to your email.', [
+        { text: 'OK', onPress: () => navigation.navigate('StaffForgotPasswordCode', { email: email.trim() }) },
+      ]);
     } catch (authError) {
       setError(authError.message || 'Unable to send reset code.');
     } finally {
@@ -48,7 +52,7 @@ export default function StaffForgotPasswordEmailScreen({ navigation }) {
         <GlassCard style={styles.card}>
           <Text style={styles.badge}>Reset Password</Text>
           <Text style={styles.title}>Enter your email</Text>
-          <Text style={styles.subtitle}>We will send a 6-digit code to your staff email.</Text>
+          <Text style={styles.subtitle}>Enter the email address you used when registering your staff account. We will send a 6-digit reset code to that email.</Text>
 
           <View style={styles.form}>
             <TextInput
