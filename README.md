@@ -1,52 +1,38 @@
 # QUEUELESS APP
 
-Single Expo app with role-based folders kept separate for navigation clarity.
+QueueLess is a single Expo app with role-based folders kept separate for clearer navigation and easier maintenance.
 
-## Structure
+## Project Layout
 
-- `Admin/` admin-specific flows
-- `Staff/` staff-specific flows
-- `Student/` student-specific flows
-- `src/` shared app code
-- `assets/` images and static files
+- `Admin/` admin-specific screens and flows
+- `Staff/` staff launcher and staff-specific screens
+- `Student/` student-specific screens
+- `src/` shared components, navigation, theme, and utilities
+- `assets/` static images and other files
 - `server/` password reset backend
 
-## Run The App
+## System Overview
 
-```bash
-cd C:\queueless-appdev
-npm run web
-```
+QueueLess is a single Expo app that serves three roles from one codebase:
 
-Use Expo tunnel when the phone is not on the same Wi-Fi:
+- Admin manages accounts, reviews reports, and views staff QR codes.
+- Staff generates QR codes, monitors the queue, and updates their profile or settings.
+- Students scan a QR code and wait for queue updates.
 
-```bash
-npm run start:tunnel
-```
+The app starts in [App.js](App.js), where push notifications are registered and the navigation tree is loaded. From there, [src/navigation/AppNavigator.js](src/navigation/AppNavigator.js) decides which screens to show based on the signed-in user, their role, and the platform.
 
-## Run The Reset Server
+Firebase is the main data and authentication layer. It handles sign-in, staff approval status, realtime data, push token storage, and logout behavior through [firebase.js](firebase.js).
 
-```bash
-cd C:\queueless-appdev
-npm run server:start
-```
+The password reset flow runs through the Node server in [server/index.js](server/index.js), which supports SMTP checks and reset-related backend logic.
 
-If the service dependencies are missing:
+Shared visual styling lives in [src/theme/index.js](src/theme/index.js), which keeps colors, spacing, and typography consistent across admin, staff, and student screens.
 
-```bash
-npm run server:install
-```
+## Quick Start
 
-## Staff Dev Client
+Run the app from the project root:
 
-```bash
-cd C:\queueless-appdev\Staff
-npm run start:tunnel
-```
-
-## Optional ADB Commands
-
-Only needed for `expo run:android` or `adb reverse`.
+## ADB Utilities
+These are only needed for Android device pairing or `adb reverse` troubleshooting:
 
 ```bash
 adb pair IP:PORT
@@ -57,24 +43,28 @@ adb kill-server
 adb start-server
 ```
 
-## Run SMTP Server (Password Reset)
+```bash
+cd C:\queueless-appdev
+npx expo start --web
+```
+
+## Password Reset Server
+
+The backend lives in `server/` and is normally started through the root script:
 
 ```bash
-cd server
+cd C:\queueless-appdev
 npm run server:start
 ```
 
-To stop the background server:
+If you need to run it directly from the server folder:
 
 ```bash
-taskkill /F /IM node.exe
-
- 
-```
-Run again 
-
-```bash
+cd C:\queueless-appdev\server
 npm start
-
- 
 ```
+
+## Notes
+
+- Keep shared components in `src/` to avoid platform-specific bundling issues.
+- When adding web-only or native-only logic, prefer platform-specific files such as `Component.web.js` and `Component.js`.
